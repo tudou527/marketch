@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>demo</title>
+<style>
+body,h1,h2,h3,h4,h5,h6,p,blockquote,dl,dt,dd,ul,ol,li,pre,form,fieldset,legend,button,input,textarea,th,td {margin:0;padding:0;}
+body,button,input,select,textarea {font: 12px/1.5 tahoma,arial,'Hiragino Sans GB',\5FAE\8F6F\96C5\9ED1,sans-serif;}
+h1,h2,h3,h4,h5,h6,button,input,select,textarea {font-size:100%;}
+label,input,select {vertical-align:middle;}
+address,cite,em {font-style:normal;}
+fieldset,img {border:none;}
+ul,ol {list-style:none;}
+table {border-collapse:collapse}
+sub {vertical-align:text-bottom;}
+sup {vertical-align:text-top;}
+small {font-size:12px;}
+legend {color:#555;}
+a, a:visited {text-decoration:none;}
+a:hover {text-decoration:none;}
+a {color:#333}
+a:hover {color:#06c;}
+input[type=text], textarea {outline:0;padding:3px;}
+
+.page {position:relative;padding:0;}
+    .wrap {position:relative;z-index:0;overflow:hidden;}
+    .wrap:after {content:'';display:block;clear:both;height:0;overflow:hidden;}
+        .wrap-layer {display:none;}
+        .wrap-layer-active {display:block;}
+            .wrap-layer div {box-sizing:border-box;}
+            .wrap-layer div[aid]:hover {border:1px solid #004BD2;}
+
+        .sketch-marker {position:absolute;visibility:hidden;top:140px;left:300px;z-index:9;border:1px solid #FE3B00;width:200px;height:200px;text-align:center;vertical-align:center;pointer-events:none;background:rgba(0,0,0);}
+            .sketch-marker-disable b {visibility:hidden;}
+            .sketch-marker span {position:absolute;z-index:2;width:7px;height:7px;}
+                /* 竖线 */
+                .sketch-marker span:before {content:'';position:absolute;z-index:0;width:1px;height:9999px;border-left:1px dashed #FE3B00;}
+                /* 横线 */
+                .sketch-marker span:after {content:'';position:absolute;z-index:0;height:1px;min-width:9999px;border-bottom:1px dashed #FE3B00;}
+                .sketch-marker em {position:absolute;left:0;top:0;z-index:1;width:5px;height:5px;border:1px solid #FE3B00;border-radius:100%;background:#fff;background:#fff;}
+                .sketch-marker .skm-tl {top:-4px;left:-4px;}
+                    .sketch-marker .skm-tl:before {margin-left:-1px;bottom:100%;}
+                    .sketch-marker .skm-tl:after {margin-top:2px;right:-100%;}
+                .sketch-marker .skm-tr {top:-4px;right:-4px;}
+                    .sketch-marker .skm-tr:before {margin-left:-1px;bottom:100%;}
+                    .sketch-marker .skm-tr:after {margin-top:2px;left:-100%;}
+                .sketch-marker .skm-bl {bottom:-4px;left:-4px;}
+                    .sketch-marker .skm-bl:before {margin-left:-1px;top:100%;}
+                    .sketch-marker .skm-bl:after {margin-top:2px;right:-100%;}
+                .sketch-marker .skm-br {bottom:-4px;right:-4px;}
+                    .sketch-marker .skm-br:before {margin-left:-1px;top:100%;}
+                    .sketch-marker .skm-br:after {margin-top:2px;left:-100%;}
+            
+            .skm-w, .skm-h {position:relative;display:inline-block;vertical-align:middle;z-index:2;}
+                .skm-w:after, .skm-h:after {display:block;top:0;left:0;right:0;padding:0 5px;border-radius:3px;height:18px;line-height:18px;font-size:12px;font-weight:100;color:#FE3B00;background:#fff;}
+            .sketch-marker .skm-w {margin-top:-39px;padding-bottom:5px;}
+                .sketch-marker .skm-w:after {content:attr(w)'px';}
+            .sketch-marker .skm-h {position:absolute;top:50%;left:100%;margin-top:-9px;padding-left:5px;}
+                .sketch-marker .skm-h:after {content:attr(h)'px';}
+
+        /* 标尺 */
+        .skm-rule {position:absolute;z-index:10;text-align:center;visibility:hidden;}
+        .skm-rule span {display:inline-block;padding:0 5px;border-radius:3px;height:18px;line-height:18px;font-size:12px;font-weight:100;color:#FE3B00;background:#fff;}
+        .skm-r-left, .skm-r-right {width:100px;height:0;border-bottom:1px solid #FE3B00;}
+            .skm-r-left span, .skm-r-right span {position:relative;top:-24px;}
+            .skm-r-left:before, .skm-r-left:after, .skm-r-right:before, .skm-r-right:after {content:'';position:absolute;height:9px;width:1px;background:#fe3b00;}
+            .skm-r-left:before, .skm-r-right:before {top:-4px;left:0px;}
+            .skm-r-left:after, .skm-r-right:after {top:-4px;right:0px;}
+        .skm-r-top, .skm-r-bottom {height:100px;width:0;border-left:1px solid #FE3B00;}
+            .skm-r-top span, .skm-r-bottom span {position:absolute;top:50%;margin:-9px 0 0 5px;}
+            .skm-r-top:before, .skm-r-top:after, .skm-r-bottom:before, .skm-r-bottom:after {content:'';position:absolute;width:9px;height:1px;background:#fe3b00;}
+            .skm-r-top:before, .skm-r-bottom:before {top:0;left:-5px;}
+            .skm-r-top:after, .skm-r-bottom:after {bottom:0;left:-5px;}
+
+    .panel {position:fixed;top:0;right:-200px;bottom:0;z-index:1;padding:10px 5px 10px 10px;width:185px;color:#fff;background:#2B3A48;-webkit-transition:right 0.1s ease-in-out;}
+    .panel-active {right:0;box-shadow:-2px 0 5px rgba(0,0,0,.4);}
+        .panel dl {margin-bottom:20px;}
+            .panel dt {position:relative;height:18px;line-height:18px;}
+                .panel dt span {position:relative;z-index:2;padding:0 5px 0 0;color:#ddd;background:#2B3A48;}
+            .panel dt:after {content:'';position:absolute;left:0;top:9px;width:180px;height:1px;background:#424E5A;}
+            .panel dd {padding:5px 0;overflow:hidden;}
+                .panel dd ul {overflow:hidden;}
+                    .panel li {float:left;width:50%;}
+                        .panel li label {float:left;}
+                        .panel li input {float:left;border:0;width:100px;}
+                .panel dd p, .panel dd textarea {padding:3px;width:175px;border:0;max-height:200px;border-radius:3px;color:#b3b8bd;background:#555C64;overflow:auto;}
+                .panel dd textarea {height:180px;resize:none;}
+        .export-btn {padding-top:10px;text-align:center;}
+            .panel-export, .panel-export:hover {display:inline-block;padding:0 15px;height:24px;line-height:24px;border-radius:3px;color:#b3b8bd;box-shadow:0 0 3px rgba(0,0,0,.4);background:#434950;}
+</style>
+</head>
+<body>
+<div class="page">
+    <div class="switch">
+        <select id="sw-page"></select>
+        <select id="sw-artboard"></select>
+    </div>
+    <div class="wrap" id="wrap"></div>
+    <div class="panel" id="panel">
+    </div>
+</div>
+<script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+<script>
+var Marketch = function(obj){
+    this.cache = {
+        //当前选中的节点
+        selected: null,
+        //mouseover节点
+        target: null
+    }
+    this.sketchData = obj.sketchData;
+    //当前画板所有图层数据
+    this.currentAbData = {};
+}
+Marketch.prototype = {
+    render: function(){
+        //创建选中图层的标注
+        this.buildMarker();
+        //创建2个图层之间的标尺
+        this.buildRuler();
+        this.bind();
+        this.buildSwitch();
+    },
+
+    //创建选中图层的标注
+    buildMarker: function(){
+        var marker = $('<div>');
+        marker.attr({
+            id: 'sketch-marker',
+            class: 'sketch-marker'
+        });
+        marker.html('<b class="skm-w" w=""></b><b class="skm-h" h=""></b><span class="skm-tl"><em></em></span><span class="skm-tr"><em></em></span><span class="skm-bl"><em></em></span><span class="skm-br"><em></em></span>');
+
+        $('#wrap').append(marker);
+    },
+
+    //创建2个图层之间的标尺
+    buildRuler: function(){
+        var frageElement = document.createDocumentFragment();
+        var className = ['skm-r-top', 'skm-r-right', 'skm-r-bottom', 'skm-r-left']
+        
+        for(var i=0,len=className.length;i<len;i++){
+            var node = document.createElement('div');
+            node.id = className[i];
+            node.className = 'skm-rule '+ className[i];
+            node.innerHTML = '<span></span>';
+
+            frageElement.appendChild(node)
+        }
+
+        $('#wrap').append(frageElement);
+    },
+
+    //页面切换
+    buildSwitch: function(){
+        var self = this;
+        //切换页面select
+        var pageSwitcher = $('#sw-page');
+        var pageSwitcherHtml = [];
+        //切换画板select
+        var abSwitcher = $('#sw-artboard');
+        var abSwitcherHtml = [];
+        var sketchPageData = {};
+        var currentPageId = null;
+
+        $.each(this.sketchData.page, function(index, data){
+            pageSwitcherHtml.push(
+                '<option value="'+ data.pageId +'">'+ data.name +'</option>'
+            )
+            sketchPageData[data.pageId] = data.artboard;
+
+            if(index == 0){
+                currentPageId = data.pageId;
+            }
+
+            $.each(data.artboard, function(n, artboard){
+                if(index == 0){
+                    abSwitcherHtml.push(
+                        '<option value="'+ artboard.id +'">'+ artboard.name +'</option>'
+                    );
+                }
+            })
+        });
+
+        //切换页面
+        pageSwitcher.html(pageSwitcherHtml.join('')).on('change', function(){
+            var pageId = $(this).val();
+
+            currentPageId = pageId;
+            abSwitcherHtml = [];
+
+            $.each(sketchPageData[pageId], function(index, artboard){
+                abSwitcherHtml.push(
+                    '<option value="'+ artboard.id +'">'+ artboard.name +'</option>'
+                );
+            });
+            abSwitcher.html(abSwitcherHtml.join('')).change();
+        });
+
+        //切换画板
+        abSwitcher.html(abSwitcherHtml.join('')).on('change', function(){
+            var theArtboard = $(this).val();
+            var selectArtData = null;
+            $.each(sketchPageData[currentPageId], function(n, artboard){
+                if(!selectArtData && artboard.id == theArtboard){
+                    selectArtData = artboard;
+                }
+            });
+
+            //加载目标画板
+            self.loadArtboard(selectArtData);
+        }).change();
+    },
+
+    //加载画板
+    loadArtboard: function(artboard){
+        var self = this;
+        var artboardId = artboard.id;
+        var targetEl = $('#'+ artboardId);
+        var baseX = artboard.x;
+        var baseY = artboard.y;
+        var artHtml = [];
+
+        if(targetEl.size() == 0){
+            targetEl = $('<div>');
+            targetEl.attr('id', artboardId);
+
+            $.each(self.sketchData.artboard[artboardId], function(index, layer){
+                var x = layer.x;
+                var y = layer.y;
+
+                self.currentAbData[layer.id] = layer;
+
+                artHtml.push(
+                    '<div aid="', layer.id ,'" style="',
+                        'position:absolute;top:', (layer.y - baseY) ,'px;',
+                        'left:', (layer.x - baseX) ,'px;',
+                        'width: ', layer.width, 'px;',
+                        'height: ', layer.height, 'px;',
+                    '">',
+                        //layer.html,
+                    '</div>'
+                );
+            });
+            artHtml.push('</div>');
+
+            targetEl.attr('class', 'wrap-layer').html(artHtml.join('')).css({
+                width: artboard.width,
+                height: artboard.height,
+                background: 'url('+ artboard.id +'/artboard.png)',
+                backgroundSize: '100% 100%'
+            }).appendTo($('#wrap'));
+        }
+
+        $('#wrap .wrap-layer-active').removeClass('wrap-layer-active');
+        targetEl.addClass('wrap-layer-active');
+    },
+
+    bind: function(){
+        var self = this;
+        $('#wrap').on('click', function(e){
+            var el = $(e.target);
+            if(el.attr('aid')){
+                if(el != self.cache.selected){
+                    self.cache.selected = el;
+
+                    $('#sketch-marker').removeClass('sketch-marker-disable');
+                    self.changeRulerState('none', {});
+                    self.selectedLayer();
+                    self.showPanel();
+                }
+            }else{
+                self.cache.selected = null;
+
+                $('#panel').hide();
+                $('#sketch-marker').css('visibility', 'hidden');
+            }
+        })
+        .on('mousemove', function(e){
+            var el = $(e.target);
+
+            if(el.attr('aid')){
+                if(self.cache.selected){
+                    //有被选中的图层时显示距离
+                    if(el != self.cache.target && el != self.cache.selected){
+                        self.cache.target = el;
+                        $('#sketch-marker').addClass('sketch-marker-disable');
+                        self.showRuler();
+                    }
+                }else{
+                }
+            }else{
+                self.changeRulerState('none', {});
+            }
+        })
+        .on('mouseout', function(e){
+            if(e.target.getAttribute('aid')){
+                $('#sketch-marker').removeClass('sketch-marker-disable');
+                self.cache.target = null;
+                self.changeRulerState('none', {});
+            }
+        });
+    },
+
+    //选中图层
+    selectedLayer: function(){
+        var marker = this.cache.marker;
+        var selected = this.cache.selected;
+
+        $('#sketch-marker').css({
+            width: selected.width(),
+            height: selected.height(),
+            top: selected.position().top,
+            left: selected.position().left,
+            visibility: 'visible'
+        }).find('b').eq(0).attr('w', selected.width())
+          .end().eq(1).attr('h', selected.height())
+    },
+
+    showPanel: function(){
+        var selected = this.cache.selected;
+        var objectId = selected.attr('aid');
+        var layerData = this.currentAbData[objectId];
+        var html = [];
+
+        html.push(
+            '<dl>',
+                '<dt><span>位置</span></dt>',
+                '<dd>',
+                    '<ul>',
+                        '<li><label>X：</label>', layerData.x ,'</li>',
+                        '<li><label>Y：</label>', layerData.y ,'</li>',
+                    '</ul>',
+                '</dd>',
+            '</dl>',
+            '<dl>',
+                '<dt><span>尺寸</span></dt>',
+                '<dd>',
+                    '<ul>',
+                        '<li><label>宽：</label>', layerData.width ,'</li>',
+                        '<li><label>高：</label>', layerData.height ,'</li>',
+                    '</ul>',
+                '</dd>',
+            '</dl>'
+        );
+        
+        if(layerData.html){
+            html.push(
+                '<dl>',
+                    '<dt><span>文字</span></dt>',
+                    '<dd>',
+                        '<p>', layerData.html ,'</p>',
+                    '</dd>',
+                '</dl>'
+            )
+        }
+        if(layerData.style){
+            html.push(
+                '<dl>',
+                    '<dt><span>代码</span></dt>',
+                    '<dd>',
+                        '<textarea readonly>', this.formatStyle(layerData.style) ,'</textarea>',
+                    '</dd>',
+                '</dl>'
+            )
+        }
+
+        if(!layerData.html){
+            html.push(
+                '<dl>',
+                    '<dt><span>导出</span></dt>',
+                    '<dd>',
+                        '<ul>',
+                            '<li>',
+                                '<label>尺寸：</label><select><option value="2x">2x</option></select>',
+                            '</li>',
+                            '<li>',
+                                '<label>格式：</label><select><option value="png">png</option></select>',
+                            '</li>',
+                        '</ul>',
+                        '<div class="export-btn"><a href="images/', objectId ,'.png" class="panel-export" download="', layerData.name ,'.png">导出</a></div>',
+                    '</dd>',
+                '</dl>'
+            )
+        }
+
+        $('#panel').html(html.join('')).addClass('panel-active');
+    },
+
+    //格式化css json数据
+    formatStyle: function(styleJson){
+        var style = [];
+
+        for(var k in styleJson){
+            style.push(k , ':', (styleJson[k].indexOf(' ') > -1 ? '"'+styleJson[k]+'"' : styleJson[k]), ';\r\n')
+        }
+        
+        return style.join('');
+    },
+
+    //显示标尺，标尺总是由target指向selected
+    changeRulerState: function(type, data){
+        $('#skm-r-top').css('visibility', 'hidden');
+        $('#skm-r-left').css('visibility', 'hidden');
+        $('#skm-r-right').css('visibility', 'hidden');
+        $('#skm-r-bottom').css('visibility', 'hidden');
+        
+        if(type == 'none'){return false;}
+
+        //向上的标尺
+        if(type.indexOf('top') > -1){
+            $('#skm-r-top').css({
+                left: (data.tx + data.tw/2),
+                top: (data.sy + data.sh + 1),
+                height: parseInt((data.ty - data.sy - data.sh - 2), 10)
+            })
+            .css('visibility', 'visible')
+            .find('span').html((data.ty - data.sy - data.sh) +'px');
+        }
+
+        //向左的标尺
+        if(type.indexOf('left') > -1){
+            $('#skm-r-left').css({
+                top: (data.ty + data.th/2),
+                left: (data.sx + data.sw + 1),
+                width: parseInt((data.tx - data.sx - data.sw -2), 10)
+            })
+            .css('visibility', 'visible')
+            .find('span').html((data.tx - data.sx - data.sw) +'px');
+        }
+
+        //向右的标尺
+        if(type.indexOf('right') > -1){
+            $('#skm-r-right').css({
+                top: (data.ty + data.th/2),
+                left: (data.tx + data.tw + 1),
+                width: parseInt((data.sx - data.tx - data.tw - 2), 10)
+            })
+            .css('visibility', 'visible')
+            .find('span').html((data.sx - data.tx - data.tw) +'px');
+        }
+
+        //向下的标尺
+        if(type.indexOf('bottom') > -1){
+            $('#skm-r-bottom').css({
+                left: (data.tx + data.tw/2),
+                top: (data.ty + data.th + 1),
+                height: parseInt((data.sy - data.ty - data.th - 2), 10)
+            })
+            .css('visibility', 'visible')
+            .find('span').html((data.sy - data.ty - data.th) +'px');
+        }
+
+        //鼠标图层(t)包含选中图层(s)
+        if(type == 'container-in'){
+            $('#skm-r-top').css({
+                left: (data.sx + data.sw/2),
+                top: (data.ty + 1),
+                height: parseInt((data.sy - data.ty - 2), 10)
+            })
+            .css('visibility', 'visible')
+            .find('span').html((data.sy - data.ty) +'px');
+
+            $('#skm-r-bottom').css({
+                left: (data.sx + data.sw/2),
+                top: (data.sy + data.sh + 1),
+                height: parseInt(this.validateNum(data.ty + data.th - data.sy - data.sh - 2), 10)
+            })
+            .css('visibility', 'visible')
+            .find('span').html(this.validateNum(data.ty + data.th - data.sy - data.sh) +'px');
+
+            $('#skm-r-left').css({
+                top: (data.sy + data.sh/2),
+                left: (data.tx + 1),
+                width: parseInt(this.validateNum(data.sx - data.tx - 2), 10)
+            })
+            .css('visibility', 'visible')
+            .find('span').html((data.sx - data.tx) +'px');
+
+            $('#skm-r-right').css({
+                top: (data.sy + data.sh/2),
+                left: (data.sx + data.sw + 1),
+                width: parseInt(this.validateNum(data.tx + data.tw - data.sx - data.sw - 2), 10)
+            })
+            .css('visibility', 'visible')
+            .find('span').html(this.validateNum(data.tx + data.tw - data.sx - data.sw) +'px');
+        }
+
+        //被选中图层(s)包含鼠标图层(t)
+        if(type =='container-out'){
+            $('#skm-r-top').css({
+                left: (data.tx + data.tw/2),
+                top: (data.sy + 1),
+                height: parseInt(this.validateNum(data.ty - data.sy - 2), 10)
+            })
+            .css('visibility', 'visible')
+            .find('span').html(this.validateNum(data.ty - data.sy) +'px');
+
+            $('#skm-r-bottom').css({
+                left: (data.tx + data.tw/2),
+                top: (data.ty + data.th + 1),
+                height: parseInt(this.validateNum(data.sy + data.sh - data.ty - data.th - 2), 10)
+            })
+            .css('visibility', 'visible')
+            .find('span').html(this.validateNum(data.sy + data.sh - data.ty - data.th) +'px');
+
+            $('#skm-r-top').css({
+                top: (data.ty + data.th/2),
+                left: (data.sx + 1),
+                width: parseInt(this.validateNum(data.tx - data.sx - 2), 10)
+            })
+            .css('visibility', 'visible')
+            .find('span').html(this.validateNum(data.tx - data.sx) +'px');
+
+            $('#skm-r-right').css({
+                top: (data.ty + data.th/2),
+                left: (data.tx + data.tw + 1),
+                width: parseInt(this.validateNum(data.sx + data.sw - data.tx - data.tw - 2), 10)
+            })
+            .css('visibility', 'visible')
+            .find('span').html(this.validateNum(data.sx + data.sw - data.tx - data.tw) +'px');
+        }
+    },
+
+    validateNum: function(num){
+        return num < 0 ? Math.abs(num) : num;
+    },
+
+    /*
+     * 显示标记T表示当前鼠标over的图层，S表示选中的图层
+     * 标尺总是由target指向selected
+     *  T1     T2
+     *   ┌     ┐
+     *      S
+     *   └     ┘
+     *  T3     T4
+     */
+    showRuler: function(){
+        var buffer = 0;
+        //当前选中的节点
+        var selectEl = this.cache.selected;
+        //mouseover目标节点
+        var targetEl = this.cache.target;
+        var data = {
+            //选中节点宽
+            sw: selectEl.width(),
+            //选中节点高
+            sh: selectEl.height(),
+            //选中节点x坐标
+            sx: selectEl.position().left,
+            //选中节点y坐标
+            sy: selectEl.position().top,
+            //mouseover节点宽
+            tw: targetEl.width(),
+            //mouseover节点高
+            th: targetEl.height(),
+            //mouseover节点x坐标
+            tx: targetEl.position().left,
+            //mouseover节y坐标
+            ty: targetEl.position().top
+        }
+        
+        //鼠标经过的图层在选中图层上方(T1 T2的位置)
+        if(data.sy - (data.ty + data.th) >= buffer){
+            console.log('-->1');
+            if(data.sx - (data.tx + data.tw) >= buffer){
+                //[上]左 显示向下，向右的标尺
+                console.log('---->1.1');
+                this.changeRulerState('bottom-right', data);
+            }else if(data.tx - (data.sx + data.sw) >= buffer){
+                //[上]右 显示向下，向左的标尺
+                console.log('---->1.2');
+                this.changeRulerState('bottom-left', data);
+            }else{
+                console.log('---->1.3');
+                this.changeRulerState('bottom', data);
+            }
+        }
+
+        //鼠标经过的图层在选中图层下方(T1 T2的位置)
+        if(data.ty - (data.sy + data.sh) > buffer){
+            console.log('-->2');
+            if(data.sx - (data.tx + data.tw) >= buffer){
+                //[下]左 显示向上，向右的标尺
+                console.log('---->2.1');
+                this.changeRulerState('top-right', data);
+            }else if(data.tx - (data.sx + data.sw) >= buffer){
+                //[下]右 显示向上，向左的标尺
+                console.log('---->2.2');
+                this.changeRulerState('top-left', data);
+            }else{
+                console.log('---->2.3');
+                this.changeRulerState('top', data);
+            }
+        }
+
+        //鼠标经过的图层与选中图层映射到垂直线上有交集只显示水平的标尺
+        if((data.ty >= data.sy && data.ty <= (data.sy + data.sh)) || (data.sy >= data.ty && data.sy <= (data.ty + data.th))){
+            if(data.sx - (data.tx + data.tw) >= buffer){
+                console.log('---->3.1');
+                this.changeRulerState('right', data);
+            }else if(data.tx - (data.sx + data.sw) >= buffer){
+                console.log('---->3.2');
+                this.changeRulerState('left', data);
+            }else{
+                //鼠标图层(t)包含选中图层(s)(标尺总是由target指向selected)
+                console.log('---->3.3');
+                this.changeRulerState('container-in', data);
+            }
+        }
+
+        //鼠标经过的图层与选中图层映射到水平线上有交集只显示垂直的标尺
+        if(data.tx >= data.sx && data.tx <= (data.sx + data.sw)){
+            console.log('-->4');
+            if(data.sy - (data.ty + data.th) >= buffer){
+                console.log('---->4.1');
+                this.changeRulerState('bottom', data);
+            }else if(data.ty - (data.sy + data.sh) >= buffer){
+                console.log('---->4.2');
+                this.changeRulerState('top', data);
+            }else{
+                console.log('---->4.3');
+                //被选中图层(s)包含鼠标图层(t)(标尺总是由target指向selected)
+                this.changeRulerState('container-out', data);
+            }
+        }
+    }
+}
+
+var xdata = document.createElement('script');
+xdata.onload = function(){
+    new Marketch({
+        sketchData: pageData
+    }).render();
+}
+xdata.src = 'data.js';
+document.body.appendChild(xdata);
+</script>
+</body>
+</html>
