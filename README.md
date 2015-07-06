@@ -3,7 +3,7 @@
 
 ## preview
 
-![](preview.png)
+![preview](marketch-preview.pngg)
 
 ## demo
 [http://tudou527.github.io/masketch/](http://tudou527.github.io/masketch/)
