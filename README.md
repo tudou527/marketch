@@ -15,5 +15,5 @@ Notice
 
 ## Using the Plugin
 * Select pages and artboards in the upper left corner
-* Select an element to view its location and CSS styles on the left side of the page.
+* Select an element to view its location and CSS styles on the right side of the page.
 * Select an element and hover another to see the spacing between them. 
