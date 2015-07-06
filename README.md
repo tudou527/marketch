@@ -1,5 +1,10 @@
 # marketch
 
+Marketch is a Sketch 3 plug-in for automatically generating html page that can measure and get CSS styles on it.
+
+Notice
+* This plugin works for latest Sketch(Version 3.3.2).
+* It does not work without artboard using.
 
 ## preview
 
@@ -8,9 +13,7 @@
 ## demo
 [http://tudou527.github.io/masketch/](http://tudou527.github.io/masketch/)
 
-## usage
-
-1. open your sketch file
-2. plugin -> marketch
-3. select a fold to save the export zip file
-4. unzip the zipfile and view index.html in browser
+## Using the Plugin
+* Select pages and artboards in the upper left corner
+* Select an element to view its location and CSS styles on the left side of the page.
+* Select an element and hover another to see the spacing between them. 
