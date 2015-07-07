@@ -11,7 +11,7 @@ Notice
 ![preview](marketch-preview.png)
 
 ## demo
-[http://tudou527.github.io/masketch/](http://tudou527.github.io/masketch/)
+[http://tudou527.github.io/marketch/](http://tudou527.github.io/marketch/)
 
 ## Using the Plugin
 * Select pages and artboards in the upper left corner
