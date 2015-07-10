@@ -39,7 +39,7 @@ var BayMax = function(){
 BayMax.prototype = {
     //获取插件目录（不同的插件版本目录是不一样的）
     getPluginPath: function(){
-        var pluginPaths =['~/Library/Containers/com.bohemiancoding.sketch3/Data/Library/Application Support/com.bohemiancoding.sketch3/Plugins', '~/Library/Application Support/com.bohemiancoding.sketch3/Plugins'];
+        var pluginPaths =['~/Library/Containers/com.bohemiancoding.sketch3/Data/Library/Application Support/com.bohemiancoding.sketch3/Plugins', '~/Library/Application Support/com.bohemiancoding.sketch3/Plugins','~/Library/Containers/com.bohemiancoding.sketch3/Data/Library/Application Support/com.bohemiancoding.sketch3/Plugins/Marketch', '~/Library/Application Support/com.bohemiancoding.sketch3/Plugins/Marketch'];
         var thePluginPath = '';
         
         Util.each(pluginPaths, function(path){
