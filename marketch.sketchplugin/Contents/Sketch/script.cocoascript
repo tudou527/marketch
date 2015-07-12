@@ -3,6 +3,23 @@
 var console = {log: Util.log}
 //文档对象
 var doc = null;
+//多语言
+var I18N = {
+    'zh-cn': {
+        'EXPORT': '导出',
+        'EXPORTTO': '导出到：',
+        'CANCELEXPORT': '您取消了导出',
+        'NOARTBOARD': '没有检测到画板（Marketch目前是按画板导出图层的）',
+        'EXPORTSUCCESS': '打包导出成功'
+    },
+    'en': {
+        'EXPORT': 'Exprot',
+        'EXPORTTO': 'Export to:',
+        'CANCELEXPORT': 'The export is canceled',
+        'NOARTBOARD': 'No artboards found',
+        'EXPORTSUCCESS': 'Export success'
+    }
+}
 
 var BayMax = function(){
     //所有画板
@@ -37,6 +54,97 @@ var BayMax = function(){
 }
 
 BayMax.prototype = {
+    run: function(){
+        var self = this;
+        //当前文档下所有页面
+        var pages = doc.pages();
+        var basePath = '';
+        //用户选择的导出路径
+        var exportPath = null;
+
+        //初始化临时目录路径
+        self.initTmpPath();
+        //获取系统语言
+        self.getSysLanguage();
+        //获取插件所在目录
+        self.getPluginPath();
+
+        //临时文件跟目录
+        basePath = self.tmpPath.basePath;
+
+        //console.log('=== start ===');
+
+        //遍历所有页面
+        Util.each(pages, function(page, index){
+            var data = {
+                //页面名
+                name: page.name() +'',
+                //页面唯一id
+                pageId: page.objectID() +'',
+                //页面下画板id列表(保证显示的顺序)
+                artboard: []
+            }
+            //页面下所有画板
+            var artboards = page.artboards();
+
+            if([artboards count] > 0){
+                Util.each(artboards, function(artboard, aindex){
+                    var artboardId = artboard.objectID() +'';
+                    var artFrame = artboard.frame();
+                    //画板
+                    data.artboard.push({
+                        id: artboardId,
+                        x: artFrame.x(),
+                        y: artFrame.y(),
+                        name: artboard.name() +'',
+                        width: artFrame.width(),
+                        height: artFrame.height()
+                    });
+
+                    //在临时目录中创建画板文件夹
+                    artboardPath = [basePath stringByAppendingPathComponent: artboardId];
+                    [[NSFileManager alloc] createDirectoryAtPath:artboardPath withIntermediateDirectories:nil attributes:nil error:nil];
+                    
+                    //添加到画板队列
+                    self.allArtboards.push(artboard);
+                });
+            }
+
+            self.sketchData.page.push(data);
+        });
+        
+        //设置最大索引
+        self.maxIndex = self.allArtboards.length;
+
+        //遍历画板处理图层数据
+        if(self.maxIndex > 0){
+            exportPath = self.getExportPath();
+            //让用户选择导出目录
+            if(exportPath){
+                //处理画板
+                self.collectArtboard();
+            }else{
+                doc.showMessage(I18N.CANCELEXPORT);
+            }
+        }else{
+            //没有画板
+            self.showTips({content:I18N.NOARTBOARD});
+        }
+    },
+
+    //获取系统语言（只处理中英文）
+    getSysLanguage: function(){
+        var defs = [NSUserDefaults standardUserDefaults];
+        var languages = [[defs objectForKey:@"AppleLanguages"] objectAtIndex:0];
+
+        //获取到语言后重新设置I18N变量，以简化操作
+        if(languages != 'zh-Hans'){
+            I18N = I18N['en'];
+        }else{
+            I18N = I18N['zh-cn'];
+        }
+    },
+
     //获取插件目录（不同的插件版本目录是不一样的）
     getPluginPath: function(){
         var pluginPaths =['~/Library/Containers/com.bohemiancoding.sketch3/Data/Library/Application Support/com.bohemiancoding.sketch3/Plugins', '~/Library/Application Support/com.bohemiancoding.sketch3/Plugins','~/Library/Containers/com.bohemiancoding.sketch3/Data/Library/Application Support/com.bohemiancoding.sketch3/Plugins/Marketch', '~/Library/Application Support/com.bohemiancoding.sketch3/Plugins/Marketch'];
@@ -49,27 +157,54 @@ BayMax.prototype = {
                 thePluginPath = thePath;
             }
         });
+        //将路径中的代字符扩展成用户主目录
+        this.pluginPath = [thePluginPath stringByExpandingTildeInPath];
+    },
 
-        this.pluginPath = thePluginPath;
+    //初始化临时目录路径
+    initTmpPath: function(){
+        //临时目录
+        var tmpPath = NSTemporaryDirectory();
+        var basePath = [tmpPath stringByAppendingPathComponent: @"com.sketch.cosa"];
+        var imagePath = '';
+        var dataPath = '';
+
+        //删除主目录（如果存在）
+        [[NSFileManager alloc] removeItemAtPath:basePath error:nil];
+        //重新创建主目录
+        [[NSFileManager alloc] createDirectoryAtPath:basePath withIntermediateDirectories:nil attributes:nil error:nil]; 
+        //数据文件路径
+        dataPath = [basePath stringByAppendingPathComponent: @"data.js"];
+        //html文件路径
+        htmlPath = [basePath stringByAppendingPathComponent: @"index.html"];
+
+        //console.log('临时目录:'+ tmpPath);
+        //基础路径
+        this.tmpPath.basePath = basePath;
+        //数据文件路径
+        this.tmpPath.dataPath = dataPath;
+        //html文件路径
+        this.tmpPath.htmlPath = htmlPath;
     },
 
     //获取导出路径
     getExportPath: function(){
         var savePanel = NSSavePanel.savePanel();
 
-        savePanel.setTitle(@"导出");
-        savePanel.setNameFieldLabel(@"导出到：");
+        savePanel.setTitle(I18N.EXPORT);
+        savePanel.setNameFieldLabel(I18N.EXPORTTO);
         savePanel.setShowsTagField(false);
         savePanel.setAllowedFileTypes(NSArray.arrayWithObject(@"zip"));
         savePanel.setAllowsOtherFileTypes(false);
         savePanel.setCanCreateDirectories(true);
 
-        if (savePanel.runModal() != NSOKButton) {
+        if (savePanel.runModal() != NSOKButton){
             return false;
+        }else{
+            //console.log('导出目录：'+　savePanel.URL().path());
+            this.exportPath = savePanel.URL().path();//[[savePanel URL] path]
+            return true;
         }
-
-        //console.log('导出目录：'+　savePanel.URL().path());
-        this.exportPath = savePanel.URL().path();//[[savePanel URL] path]
     },
 
     //保存数据文件
@@ -98,53 +233,50 @@ BayMax.prototype = {
     copySkethFile: function(){
         var basePath = this.tmpPath.basePath;
         var sketchName = doc.displayName();
-        var savePath = [basePath stringByAppendingPathComponent: sketchName];
-        var sketchFilePath = doc.fileURL().path();
+        //sketch源文件在临时目录中的保存路径
+        var savePath = '';
+        //sketch源文件所在路径
+        var sketchFilePath = [doc fileURL];
 
-        [[NSFileManager defaultManager] copyPath:sketchFilePath toPath:savePath handler:nil];
-    },
+        if(!(/\.sketch$/.test(sketchName))){
+            sketchName += '.sketch';
+        }
+        savePath = [basePath stringByAppendingPathComponent: sketchName];
 
-    //初始化临时目录路径
-    initTmpPath: function(){
-        //临时目录
-        var tmpPath = NSTemporaryDirectory();
-        var basePath = [tmpPath stringByAppendingPathComponent: @"com.sketch.cosa"];
-        var imagePath = '';
-        var dataPath = '';
-
-        //删除主目录（如果存在）
-        [[NSFileManager alloc] removeItemAtPath:basePath error:nil];
-        //重新创建主目录
-        [[NSFileManager alloc] createDirectoryAtPath:basePath withIntermediateDirectories:nil attributes:nil error:nil]; 
-        //数据文件路径
-        dataPath = [basePath stringByAppendingPathComponent: @"data.js"];
-        //html文件路径
-        htmlPath = [basePath stringByAppendingPathComponent: @"index.html"];
-
-        //console.log('临时目录:'+ tmpPath);
-        //基础路径
-        this.tmpPath.basePath = basePath;
-        //图片路径
-        //this.tmpPath.imgPath = imagePath;
-        //数据文件路径
-        this.tmpPath.dataPath = dataPath;
-        //html文件路径
-        this.tmpPath.htmlPath = htmlPath;
+        if(sketchFilePath){
+            //如果sketch文件没有保存sketchFilePath会返回null就不需要复制sketch源文件了
+            sketchFilePath = [sketchFilePath path];
+            [[NSFileManager defaultManager] copyPath:sketchFilePath toPath:savePath handler:nil];
+        }
     },
 
     //打包文件
     zipFile: function(){
+        //打包导出目录
         var destination = this.exportPath;
+        //源文件目录
         var zipFile = this.tmpPath.basePath;
-        var task = [[NSTask alloc] init];
-        var argsArray = null;
+        var zipTask = [[NSTask alloc] init];
 
-        [task setCurrentDirectoryPath:zipFile]; 
-        [task setLaunchPath:@"/usr/bin/zip"];
-        argsArray = [NSArray arrayWithObjects:@"-r", @"-q", destination, @".", @"-i", @"*", nil];
-        [task setArguments:argsArray];
-        [task launch];
-        [task waitUntilExit];
+        [zipTask setLaunchPath:@"/usr/bin/ditto"];
+        //zip参数
+        [zipTask setArguments:[NSArray arrayWithObjects: @"-c", @"-k", @"-X", @"--rsrc", zipFile, destination, nil]];
+
+        [zipTask launch];
+        [zipTask waitUntilExit];
+
+        if ([zipTask terminationStatus] != 0){
+            //task执行失败
+            return {
+                success: false,
+                msg: [zipTask terminationReason]
+            }
+        }else{
+            //task执行成功
+            return {
+                success: true
+            }
+        }
     },
 
     /*
@@ -358,17 +490,29 @@ BayMax.prototype = {
                 //继续遍历下一个画板
                 self.collectArtboard();
             }else{
-                //保存图层数据
-                self.saveDataFile();
-                //复制html页面
-                self.copyHtmlFile();
-                //复制当前sketch文件
-                self.copySkethFile();
-                //打包
-                self.zipFile();
-                //显示提示信息
-                [doc showMessage:@'导出成功'];
+                self.saveExportData();
             }
+        }
+    },
+
+    //从临时文件中打包文件到目标文件夹
+    saveExportData:function(){
+        //打包结果
+        var zipResult = null;
+        //保存图层数据
+        this.saveDataFile();
+        //复制html页面
+        this.copyHtmlFile();
+        //复制当前sketch文件
+        this.copySkethFile();
+
+        zipResult = this.zipFile();
+
+        //打包
+        if(zipResult.success){
+            this.showTips({content: I18N.EXPORTSUCCESS});
+        }else{
+            this.showTips({content: zipResult.msg});
         }
     },
 
@@ -395,85 +539,31 @@ BayMax.prototype = {
         this.collectAllLayers();
     },
 
-    run: function(){
-        var self = this;
-        //当前文档下所有页面
-        var pages = doc.pages();
-        var basePath = '';
+    /*
+     * 消息提示
+     * obj.title
+     * obj.content
+     */
+    showTips: function(obj){
+        var title = obj.title || "Marketch for Sketch"
+        var app = [NSApplication sharedApplication];
 
-        //获取插件目录
-        this.getPluginPath();
-
-        // if([doc isDraft]){
-        //     doc.showMessage("请先保存文档");
-        //     return false;
-        // }
-
-        //让用户选择导出目录
-        self.getExportPath();
-        //初始化临时目录路径
-        self.initTmpPath();
-
-        basePath = self.tmpPath.basePath;
-
-        //console.log('============ start ============');
-
-        //遍历所有页面
-        Util.each(pages, function(page, index){
-            var data = {
-                //页面名
-                name: page.name() +'',
-                //页面唯一id
-                pageId: page.objectID() +'',
-                //页面下画板id列表(保证显示的顺序)
-                artboard: []
-            }
-            //页面下所有画板
-            var artboards = page.artboards();
-
-            if([artboards count] > 0){
-                Util.each(artboards, function(artboard, aindex){
-                    var artboardId = artboard.objectID() +'';
-                    var artFrame = artboard.frame();
-                    //画板
-                    data.artboard.push({
-                        id: artboardId,
-                        x: artFrame.x(),
-                        y: artFrame.y(),
-                        name: artboard.name() +'',
-                        width: artFrame.width(),
-                        height: artFrame.height()
-                    });
-
-                    //在临时目录中创建画板文件夹
-                    artboardPath = [basePath stringByAppendingPathComponent: artboardId];
-                    [[NSFileManager alloc] createDirectoryAtPath:artboardPath withIntermediateDirectories:nil attributes:nil error:nil];
-                    
-                    //添加到画板队列
-                    self.allArtboards.push(artboard);
-                });
-            }
-
-            self.sketchData.page.push(data);
-        });
+        [app displayDialog:obj.content withTitle:title];
+        /*
+        var altWin = [COSAlertWindow new];
+        var icon = NSImage.alloc().initByReferencingFile(this.pluginPath +'/Contents/Sketch/assets/icon.ico');
         
-        //设置最大索引
-        self.maxIndex = self.allArtboards.length;
+        altWin.setIcon(icon);
+        altWin.addButtonWithTitle('OK')
 
-        //遍历画板处理图层数据
-        if(self.maxIndex > 0){
-            self.collectArtboard();
-        }else{
-            doc.showMessage("Artborad not found!");
-        }
+        altWin.setMessageText(obj.title || 'Marketch');
+        altWin.setInformativeText(obj.content);
+        return altWin.runModal();
+        */
     }
 }
 
 function onRun(context){
-    try{
-        doc = context.document;
-        new BayMax().run();
-    }catch(e){
-        //console.log(e);
-    }
+    doc = context.document;
+    new BayMax().run();
 }

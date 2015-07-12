@@ -4,7 +4,7 @@
         {
             "script": "script.cocoascript",
             "handler": "onRun",
-            "shortcut": "",
+            "shortcut": "command+shift+m",
             "name": "marketch",
             "identifier": "marketch"
     }
@@ -17,7 +17,7 @@
         "title": "marketch"
     },
     "identifier": "com.example.sketch.98908c77-3d38-48fa-8c7c-1bb465f67eb8",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "",
     "authorEmail": "",
     "name": "marketch"
