@@ -337,19 +337,29 @@ var Util = Util || (function() {
     my.getShadow = function(layer){
         var shadowStyle = [];
         var shadows = [];
-
+        var innerShadows = [];
         if(layer.style){
             shadows = [[layer style] shadows];
+            innerShadows = [[layer style] innerShadows];
         }
-
         each(shadows, function(shadow, index){
             if(!shadow.isEnabled()){
                 return;
             }
             shadowStyle.push(
-                [shadow.offsetX(), shadow.offsetY(), shadow.blurRadius()/*, shadow.spread()*/].map(function(i){
+                [shadow.offsetX(), shadow.offsetY(), shadow.blurRadius(), shadow.spread()].map(function(i){
                     return i+"px"
                 }).join(' ') + " " + my.toRGBA(shadow.color())
+            )
+        });
+        each(innerShadows, function(innerShadow, index){
+            if(!innerShadow.isEnabled()){
+                return;
+            }
+            shadowStyle.push(
+                [innerShadow.offsetX(), innerShadow.offsetY(), innerShadow.blurRadius(), innerShadow.spread()].map(function(i){
+                    return i + "px";
+                }).join(' ') + " " + my.toRGBA(innerShadow.color()) + " inset"
             )
         });
 
