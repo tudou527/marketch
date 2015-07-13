@@ -407,7 +407,7 @@ var Util = Util || (function() {
             if( type !== 'a' ){
                 return Math.round( Number(value) * 255)
             }
-            return Number(value)
+            return Number(value).toFixed(2)
         });
 
         if(rgba[3] == 1){
