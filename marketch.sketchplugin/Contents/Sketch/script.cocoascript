@@ -367,7 +367,7 @@ BayMax.prototype = {
 
             layerData.html = [layer stringValue] +'';
 
-            layerData.style['line-heihgt'] = Math.ceil([layer lineSpacing]) +'px';
+            layerData.style['line-height'] = Math.ceil([layer lineSpacing]) +'px';
             layerData.style['text-align'] = Util.getTextAlign(layer);
             layerData.style['font-size'] = Math.ceil([layer fontSize]) +'px';
             layerData.style['color'] = Util.toRGBA(layer.textColor());
