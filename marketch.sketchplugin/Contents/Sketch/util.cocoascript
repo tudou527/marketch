@@ -395,7 +395,7 @@ var Util = Util || (function() {
         var rgba = String( color ).replace(/[\(\)]/g,'').split(' ').map(function(v){
             var t = v.split(":"),type = t[0],value=t[1]
             if( type !== 'a' ){
-                return Math.round( Number(value) * 256)
+                return Math.round( Number(value) * 255)
             }
             return Number(value)
         });

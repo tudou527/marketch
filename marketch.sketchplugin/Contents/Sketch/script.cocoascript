@@ -333,7 +333,7 @@ BayMax.prototype = {
             style: {}
         }
 
-        if(border){
+        if(border && border.isEnabled()){
             layerData.border = {
                 width: border.thickness(),
                 color: Util.toRGBA(border.color())
