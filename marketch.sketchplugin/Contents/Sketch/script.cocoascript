@@ -312,12 +312,15 @@ BayMax.prototype = {
         var layerType = [layer className];
         var frame = [layer absoluteRect];
         var layerData = {};
+        var layerStyle =layer.style();
         //图层阴影
         var shadow = Util.getShadow(layer);
         //边框
-        var border = layer.style().borders().firstObject();
+        var border = layerStyle.borders().firstObject();
         //填充
-        var fill = layer.style().fills().firstObject();
+        var fill = layerStyle.fills().firstObject();
+
+        var opacity = layerStyle.contextSettings().opacity().toFixed(2);
 
         //console.log([layer name]);
         //console.log('\t\t\t: '+ frame);
@@ -338,10 +341,8 @@ BayMax.prototype = {
                 width: border.thickness(),
                 color: Util.toRGBA(border.color())
             }
-
             layerData.style['border'] = border.thickness() +'px solid '+ Util.toRGBA(border.color());
         }
-        
         //路径图层名字都是shap，需要换成parentGroup的名称
         if(layer && layer.isKindOfClass(MSShapeGroup)) {
             layerData.name = [[layer parentGroup] name] + '';
@@ -379,15 +380,18 @@ BayMax.prototype = {
             if(layer.characterSpacing()){
                 layerData['style']['letter-spacing'] = Math.ceil(layer.characterSpacing()) +'px';
             }
+        }
 
-            if(shadow){
+        if (shadow) {
+            if (layerType == 'MSTextLayer') {
                 layerData['style']['text-shadow'] = shadow;
+            }else{
+                layerData['style']['box-shadow'] = shadow;
             }
         }
 
-        //位图
-        if(layerType == 'MSBitmapLayer' && shadow){
-            layerData['style']['text-shadow'] = shadow;
+        if (opacity && (opacity !== 1)) {
+            layerData['style']['opacity'] = opacity;
         }
 
         return layerData;
