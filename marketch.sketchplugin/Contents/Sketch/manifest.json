@@ -1,24 +1,28 @@
 {
-    "author": "tudou527@gmail.com",
+    "name": "marketch",
+    "version": "0.0.4",
+    "description": "",
+    "author": "tudou527",
+    "authorEmail": "tudou527@gmail.com",
     "commands": [
         {
-            "script": "script.cocoascript",
-            "handler": "onRun",
-            "shortcut": "command+shift+m",
-            "name": "marketch",
-            "identifier": "marketch"
-    }
-  ],
-    "menu": {
-        "isRoot": true,
-        "items": [
-      "marketch"
+            "name": "Export",
+            "identifier": "export",
+            "shortcut": "command shift m",
+            "script": "export.cocoascript"
+        },
+        {
+            "name": "Get New Version",
+            "identifier": "checkUpdate",
+            "shortcut": "",
+            "script": "checkUpdate.cocoascript"
+        }
     ],
-        "title": "marketch"
+    "menu": {
+        "items": [
+            "export",
+            "checkUpdate"
+        ]
     },
     "identifier": "com.example.sketch.98908c77-3d38-48fa-8c7c-1bb465f67eb8",
-    "version": "0.0.3",
-    "description": "",
-    "authorEmail": "",
-    "name": "marketch"
 }

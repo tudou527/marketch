@@ -1,0 +1,39 @@
+@import "util.cocoascript";
+
+var console = {log: Util.log};
+//多语言
+var I18N = Util.I18N;
+
+//升级检测
+function onRun(context){
+    var ctx = context;
+    var doc = context.document;
+    var pluginPath = [NSString stringWithFormat:@"%@", ctx.scriptPath.replace(/\/(\w*)\.cocoascript$/, '//')];
+
+    try{
+        //从manifest.json中获取版本号
+        var manifestContent = [NSData dataWithContentsOfFile: [NSString stringWithFormat:@"%@manifest.json", pluginPath]];
+        var manifest = [NSJSONSerialization JSONObjectWithData:manifestContent options:nil error:nil];
+        
+        //插件当前版本号
+        var currentVersion = parseFloat(manifest.version.match(/\d/gi).join(''), 10);
+        var response = Util.getJSON('https://raw.githubusercontent.com/tudou527/marketch/master/package.json')
+        //服务器版本号
+        var remoteVersion = null;
+
+        if(response && response.version){
+            remoteVersion = parseFloat(response.version.match(/\d/gi).join(''), 10);
+            
+            if (remoteVersion > currentVersion){
+                Util.showTips({content: I18N.NEWVERSION});
+            }else{
+                Util.showTips({content: '('+ manifest.version +')'+ I18N.LastVersion});
+            }
+        }else{
+            Util.showTips({content: I18N.NETERROR});
+        }
+    }catch(e){
+        Util.showTips({content:e});
+        //console.log(e);
+    }
+}

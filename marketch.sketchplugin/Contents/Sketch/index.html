@@ -28,7 +28,7 @@ input[type=text], textarea {outline:0;padding:3px;}
         .switch a {display:inline-block;font-size:14px;vertical-align:middle;}
     .wrap {position:relative;z-index:0;overflow:hidden;}
     .wrap:after {content:'';display:block;clear:both;height:0;overflow:hidden;}
-        .wrap-layer {display:none;}
+        .wrap-layer {display:none;background-size:100% 100% !important;}
         .wrap-layer-active {display:block;}
             .wrap-layer div {box-sizing:border-box;}
             .wrap-layer div[aid]:hover {border:1px solid #004BD2;}
@@ -168,26 +168,27 @@ Marketch.prototype = {
         //切换画板select
         var abSwitcher = $('#sw-artboard');
         var abSwitcherHtml = [];
-        var sketchPageData = {};
         var currentPageId = null;
 
-        $.each(this.sketchData.page, function(index, data){
+        $.each(self.sketchData.pageOrder, function(index, pageId){
+            var data = self.sketchData.pageData[pageId];
+
             pageSwitcherHtml.push(
                 '<option value="'+ data.pageId +'">'+ data.name +'</option>'
             )
-            sketchPageData[data.pageId] = data.artboard;
 
             if(index == 0){
                 currentPageId = data.pageId;
             }
 
-            $.each(data.artboard, function(n, artboard){
-                if(index == 0){
+            if(index == 0){
+                $.each(data.artboardId, function(n, artboardId){
+                    var artboradData = self.sketchData.artboard[artboardId];
                     abSwitcherHtml.push(
-                        '<option value="'+ artboard.id +'">'+ artboard.name +'</option>'
+                        '<option value="'+ artboradData.id +'">'+ artboradData.name +'</option>'
                     );
-                }
-            })
+                });
+            }
         });
 
         //切换页面
@@ -197,9 +198,15 @@ Marketch.prototype = {
             currentPageId = pageId;
             abSwitcherHtml = [];
 
-            $.each(sketchPageData[pageId], function(index, artboard){
+            //隐藏标记
+            $('#sketch-marker').css('visibility', 'hidden');
+            $('#panel').removeClass('panel-active');
+            self.cache.selected = null;
+
+            $.each(self.sketchData.pageData[currentPageId].artboardId, function(index, artboardId){
+                var artboradData = self.sketchData.artboard[artboardId];
                 abSwitcherHtml.push(
-                    '<option value="'+ artboard.id +'">'+ artboard.name +'</option>'
+                    '<option value="'+ artboradData.id +'">'+ artboradData.name +'</option>'
                 );
             });
             abSwitcher.html(abSwitcherHtml.join('')).change();
@@ -207,13 +214,13 @@ Marketch.prototype = {
 
         //切换画板
         abSwitcher.html(abSwitcherHtml.join('')).on('change', function(){
-            var theArtboard = $(this).val();
-            var selectArtData = null;
-            $.each(sketchPageData[currentPageId], function(n, artboard){
-                if(!selectArtData && artboard.id == theArtboard){
-                    selectArtData = artboard;
-                }
-            });
+            var artboardId = $(this).val();
+            var selectArtData = self.sketchData.artboard[artboardId];
+
+            //隐藏标记
+            $('#sketch-marker').css('visibility', 'hidden');
+            $('#panel').removeClass('panel-active');
+            self.cache.selected = null;
 
             //加载目标画板
             self.loadArtboard(selectArtData);
@@ -233,7 +240,7 @@ Marketch.prototype = {
             targetEl = $('<div>');
             targetEl.attr('id', artboardId);
 
-            $.each(self.sketchData.artboard[artboardId], function(index, layer){
+            $.each(artboard.layer, function(index, layer){
                 var x = layer.x;
                 var y = layer.y;
 
@@ -243,10 +250,11 @@ Marketch.prototype = {
                 artHtml.push(
                     '<div aid="', layer.id ,'" style="',
                         'position:absolute;top:', (layer.y - baseY - 1) ,'px;',
+                        'z-index:', layer.zIndex , ';',
                         'left:', (layer.x - baseX - 1) ,'px;',
                         'width: ', layer.width + 2, 'px;',
                         'height: ', layer.height + 2, 'px;',
-                    '">',
+                    '" name="', layer.name ,'">',
                         //layer.html,
                     '</div>'
                 );
@@ -256,8 +264,7 @@ Marketch.prototype = {
             targetEl.attr('class', 'wrap-layer').html(artHtml.join('')).css({
                 width: artboard.width,
                 height: artboard.height,
-                background: 'url('+ artboard.id +'/artboard.png)',
-                backgroundSize: '100% 100%'
+                background: 'url('+ artboard.id +'/artboard.png)'
             }).appendTo($('#wrap'));
         }
 
@@ -326,8 +333,8 @@ Marketch.prototype = {
             top: selected.position().top,
             left: selected.position().left,
             visibility: 'visible'
-        }).find('b').eq(0).attr('w', selected.width())
-          .end().eq(1).attr('h', selected.height())
+        }).find('b').eq(0).attr('w', parseInt(selected.width(), 10))
+          .end().eq(1).attr('h', parseInt(selected.height(), 10))
     },
 
     showPanel: function(){
@@ -415,7 +422,7 @@ Marketch.prototype = {
             )
         }
 
-        if(!layerData.html){
+        if(!layerData.html && this.sketchData.exportEveryLayer){
             html.push(
                 '<dl>',
                     '<dt><span>导出</span></dt>',
@@ -457,8 +464,6 @@ Marketch.prototype = {
         
         if(type == 'none'){return false;}
 
-        console.log(type);
-
         //向上的标尺
         if(type.indexOf('top') > -1){
             $('#skm-r-top').css({
@@ -467,7 +472,7 @@ Marketch.prototype = {
                 height: parseInt((data.ty - data.sy - data.sh), 10)
             })
             .css('visibility', 'visible')
-            .find('span').html((data.ty - data.sy - data.sh + 2) +'px');
+            .find('span').html(parseInt((data.ty - data.sy - data.sh + 2), 10) +'px');
         }
 
         //向左的标尺
@@ -478,7 +483,7 @@ Marketch.prototype = {
                 width: parseInt((data.tx - data.sx - data.sw), 10)
             })
             .css('visibility', 'visible')
-            .find('span').html((data.tx - data.sx - data.sw + 2) +'px');
+            .find('span').html(parseInt((data.tx - data.sx - data.sw + 2), 10) +'px');
         }
 
         //向右的标尺
@@ -489,7 +494,7 @@ Marketch.prototype = {
                 width: parseInt((data.sx - data.tx - data.tw - 2), 10)
             })
             .css('visibility', 'visible')
-            .find('span').html((data.sx - data.tx - data.tw) +'px');
+            .find('span').html(parseInt((data.sx - data.tx - data.tw), 10) +'px');
         }
 
         //向下的标尺
@@ -500,7 +505,7 @@ Marketch.prototype = {
                 height: parseInt((data.sy - data.ty - data.th - 2), 10)
             })
             .css('visibility', 'visible')
-            .find('span').html((data.sy - data.ty - data.th) +'px');
+            .find('span').html(parseInt((data.sy - data.ty - data.th), 10) +'px');
         }
 
         //鼠标图层(t)包含选中图层(s)
@@ -511,12 +516,12 @@ Marketch.prototype = {
                 height: parseInt((data.sy - data.ty - 1), 10)
             })
             .css('visibility', 'visible')
-            .find('span').html((data.sy - data.ty) +'px');
+            .find('span').html(parseInt((data.sy - data.ty), 10) +'px');
 
             $('#skm-r-bottom').css({
                 left: (data.sx + data.sw/2),
                 top: (data.sy + data.sh),
-                height: parseInt(this.validateNum(data.ty + data.th - data.sy - data.sh), 10)
+                height: this.validateNum(data.ty + data.th - data.sy - data.sh)
             })
             .css('visibility', 'visible')
             .find('span').html(this.validateNum(data.ty + data.th - data.sy - data.sh + 2) +'px');
@@ -527,12 +532,12 @@ Marketch.prototype = {
                 width: parseInt(this.validateNum(data.sx - data.tx - 1), 10)
             })
             .css('visibility', 'visible')
-            .find('span').html((data.sx - data.tx) +'px');
+            .find('span').html(parseInt((data.sx - data.tx), 10) +'px');
 
             $('#skm-r-right').css({
                 top: (data.sy + data.sh/2),
                 left: (data.sx + data.sw),
-                width: parseInt(this.validateNum(data.tx + data.tw - data.sx - data.sw), 10)
+                width: this.validateNum(data.tx + data.tw - data.sx - data.sw)
             })
             .css('visibility', 'visible')
             .find('span').html(this.validateNum(data.tx + data.tw - data.sx - data.sw + 2) +'px');
@@ -543,7 +548,7 @@ Marketch.prototype = {
             $('#skm-r-top').css({
                 left: (data.tx + data.tw/2),
                 top: (data.sy + 1),
-                height: parseInt(this.validateNum(data.ty - data.sy - 1), 10)
+                height: this.validateNum(data.ty - data.sy - 1)
             })
             .css('visibility', 'visible')
             .find('span').html(this.validateNum(data.ty - data.sy) +'px');
@@ -551,7 +556,7 @@ Marketch.prototype = {
             $('#skm-r-bottom').css({
                 left: (data.tx + data.tw/2),
                 top: (data.ty + data.th + 2),
-                height: parseInt(this.validateNum(data.sy + data.sh - data.ty - data.th - 3), 10)
+                height: this.validateNum(data.sy + data.sh - data.ty - data.th - 3)
             })
             .css('visibility', 'visible')
             .find('span').html(this.validateNum(data.sy + data.sh - data.ty - data.th - 2) +'px');
@@ -559,7 +564,7 @@ Marketch.prototype = {
             $('#skm-r-left').css({
                 top: (data.ty + data.th/2),
                 left: (data.sx + 1),
-                width: parseInt(this.validateNum(data.tx - data.sx - 1), 10)
+                width: this.validateNum(data.tx - data.sx - 1)
             })
             .css('visibility', 'visible')
             .find('span').html(this.validateNum(data.tx - data.sx) +'px');
@@ -567,7 +572,7 @@ Marketch.prototype = {
             $('#skm-r-right').css({
                 top: (data.ty + data.th/2),
                 left: (data.tx + data.tw + 2),
-                width: parseInt(this.validateNum(data.sx + data.sw - data.tx - data.tw - 3), 10)
+                width: this.validateNum(data.sx + data.sw - data.tx - data.tw - 3)
             })
             .css('visibility', 'visible')
             .find('span').html(this.validateNum(data.sx + data.sw - data.tx - data.tw -2) +'px');
@@ -575,7 +580,7 @@ Marketch.prototype = {
     },
 
     validateNum: function(num){
-        return num < 0 ? Math.abs(num) : num;
+        return num < 0 ? parseInt(Math.abs(num), 10) : parseInt(num, 10);
     },
 
     /*

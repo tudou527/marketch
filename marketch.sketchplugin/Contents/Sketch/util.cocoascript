@@ -438,6 +438,29 @@ var Util = Util || (function() {
         return layer.className().toString() == 'MSLayerGroup';
     }
 
+    /*
+     * 消息提示
+     * obj.title
+     * obj.content
+     */
+    my.showTips = function(obj){
+        var title = obj.title || 'Marketch for Sketch';
+        var app = [NSApplication sharedApplication];
+
+        [app displayDialog:obj.content withTitle:title];
+        /*
+        var altWin = [COSAlertWindow new];
+        var icon = NSImage.alloc().initByReferencingFile(this.pluginPath +'/Contents/Sketch/assets/icon.ico');
+        
+        altWin.setIcon(icon);
+        altWin.addButtonWithTitle('OK')
+
+        altWin.setMessageText(obj.title || 'Marketch');
+        altWin.setInformativeText(obj.content);
+        return altWin.runModal();
+        */
+    }
+
     function join( obj, kvSplitor, itemSplitor ){
         if( typeof obj !== 'object') return false
 
@@ -562,15 +585,71 @@ var Util = Util || (function() {
         return wrap_script([render_variables(scriptObj.vars),scriptObj.body])
     }
 
-    my.join = join
-    my.map = map
-    my.values = values
-    my.in_array = in_array
-    my.each = each
-    my.extend = extend
-    my.wrap_script = wrap_script
-    my.render_variables = render_variables
-    my.script_to_string =script_to_string
+    function getJSON(url){
+        var url = [NSURL URLWithString:url];
+        var request = [NSMutableURLRequest requestWithURL:url];
+        var response = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+        var result = [NSJSONSerialization JSONObjectWithData:response options:nil error:nil];
+        return result;
+    }
+
+    //多语言配置
+    var I18N = {
+        'zh-cn': {
+            'EXPORT': '导出',
+            'EXPORTTO': '导出到：',
+            'NOARTBOARD': '没有选择任何画板',
+            'EXPORTSUCCESS': '打包导出成功',
+            'NEWVERSION': '发现版本，从Toolbox中删除后重新安装可以获取新版本',
+            'LastVersion': '已经是最新版本了',
+            'NETERROR': '无法访问更新服务器，请稍后再试',
+            'SELECTEXPORTARTBOARD': '请选择要导出的画板',
+            'SELECTEDARTBOARD': '当前选中的画板',
+            'ARTBOARDONPAGE': '当前页面上的全部画板',
+            'ALLARTBOARD': '所有画板(会比较慢)',
+            'EXPORTEVERYLAYER': '把每个图层作为图片导出',
+            'CONFIRM': '确认',
+            'CANCEl': '取消'
+        },
+        'en': {
+            'EXPORT': 'Export',
+            'EXPORTTO': 'Export to',
+            'NOARTBOARD': 'No artboards found.',
+            'EXPORTSUCCESS': 'Export success.',
+            'NEWVERSION': 'Marketch has new version. Please reinstalling form sketch toolbox.',
+            'LastVersion': 'You use the latest version.',
+            'NETERROR': 'Service is not available.',
+            'SELECTEXPORTARTBOARD': 'Please selected Artboard.',
+            'SELECTEDARTBOARD': 'Selection Artboard',
+            'ARTBOARDONPAGE': 'Artboard on current page',
+            'ALLARTBOARD': 'All Artboard',
+            'EXPORTEVERYLAYER': 'Export all layers as image',
+            'CONFIRM': 'Confirm',
+            'CANCEl': 'Cancel'
+        }
+    }
+
+    my.join = join;
+    my.map = map;
+    my.values = values;
+    my.in_array = in_array;
+    my.each = each;
+    my.extend = extend;
+    my.wrap_script = wrap_script;
+    my.render_variables = render_variables;
+    my.script_to_string =script_to_string;
+    my.getJSON = getJSON;
+    my.I18N = (function(){
+        var defs = [NSUserDefaults standardUserDefaults];
+        var languages = [[defs objectForKey:@"AppleLanguages"] objectAtIndex:0];
+
+        //获取到语言后重新设置I18N变量，以简化操作
+        if(languages != 'zh-Hans'){
+            return I18N['en'];
+        }else{
+            return I18N['zh-cn'];
+        }
+    })();
 
     return my;
 }());
