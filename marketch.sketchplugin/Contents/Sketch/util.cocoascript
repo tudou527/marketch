@@ -509,17 +509,23 @@ var Util = Util || (function() {
 
     function each( obj, iterator ){
         var i,length
+        
+        if(!obj){
+            return false;
+        }
 
-        if( obj.count && obj.className ){
+        if(obj.count && obj.count() > 0 && obj.className ){
             length = [obj count]
 
             for( i=0;i<length;i++){
-                iterator( [obj objectAtIndex:i], i)
+                [obj objectAtIndex:i] && iterator([obj objectAtIndex:i], i)
             }
-        }else if( Object.prototype.toString.call( obj) == '[object Array]'){
-            length = obj.length
-            for( i=0;i<length;i++){
-                iterator( obj[i],i)
+        }else if( Object.prototype.toString.call(obj) == '[object Array]'){
+            length = obj.length;
+            if(length > 0){
+                for( i=0;i<length;i++){
+                    obj[i] && iterator(obj[i],i)
+                }
             }
         }else if( typeof obj == 'object'){
             for( i in obj ){

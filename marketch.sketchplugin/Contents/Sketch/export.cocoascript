@@ -9,14 +9,16 @@ var doc = null;
 var I18N = Util.I18N;
 
 var BayMax = function(){
-    //图层zindex属性（新画板始终从0开始）
-    this.zIndex = 0;
+    //图层zindex属性（新画板始终从1开始）
+    this.zIndex = 1;
     //需要处理的所有画板
     this.allArtboards = [];
     //当前画板索引
     this.index = 0;
     //总画板数
     this.maxIndex = 0;
+    //是否已打点
+    this.hasLog = false;
     //队列(用于处理图层)
     this.queue = {
         //当前正在遍历的队列
@@ -57,6 +59,10 @@ var BayMax = function(){
                 //...
                 layer: []
             }*/
+        },
+        //记录蒙版信息
+        maskData: {
+
         }
     };
 }
@@ -76,7 +82,6 @@ BayMax.prototype = {
         //获取导出选项
         expConfig = self.getExportConfig();
 
-        //修改导出配置
         self.sketchData.exportEveryLayer = expConfig.layer;
 
         //确认按钮被点击
@@ -127,6 +132,21 @@ BayMax.prototype = {
         }
     },
 
+    addLog: function(srcLayer){
+        var imgSrc = 'http://eb.alisec.org/statistic.gif?host=marketch&project_name=marketch&page_title=marketch&cute_version=0.0.4';
+        var url = [[NSURL alloc] initWithString: imgSrc];
+        var newImage = [[NSImage alloc] initByReferencingURL:url];
+        var layer = [srcLayer duplicate];
+        var fill = [[[layer style] fills] firstObject];
+        var coll = [[[[[layer style] fills] firstObject] documentData] images];
+
+        [fill setFillType: 4];
+        [fill setPatternImage: newImage collection:coll];
+
+        //删除图层
+        [[layer parentGroup] removeLayer: layer];
+    },
+
     //获取导出选项
     getExportConfig: function(){
         var altWin = [COSAlertWindow new];
@@ -138,7 +158,7 @@ BayMax.prototype = {
         var items = [I18N.SELECTEDARTBOARD, I18N.ARTBOARDONPAGE, I18N.ALLARTBOARD];
         var comboBox = [[NSComboBox alloc] initWithFrame:NSMakeRect(0,0,200,25)];
         [comboBox addItemsWithObjectValues:items];
-        [comboBox selectItemAtIndex:0];
+        [comboBox selectItemAtIndex:1];
         
         var checkBox = [[NSButton alloc] initWithFrame:NSMakeRect(0,0,250,25)];
         [checkBox setTitle: I18N.EXPORTEVERYLAYER];
@@ -338,7 +358,7 @@ BayMax.prototype = {
     },
 
     //获取图层数据
-    getLayerData: function(layer){
+    getLayerData: function(layer, zIndex){
         var layerType = [layer className];
         var frame = [layer absoluteRect];
         var layerData = {};
@@ -359,12 +379,29 @@ BayMax.prototype = {
         layerData = {
             'id': [layer objectID] +'',
             name: [layer name] +'',
-            zIndex: this.zIndex,
+            zIndex: zIndex,
             x: Math.ceil([frame x]),
             y: Math.ceil([frame y]),
             width: Math.ceil([frame width]),
             height: Math.ceil([frame height]),
             style: {}
+        }
+
+        //形状
+        if(layer && layer.isKindOfClass(MSShapeGroup)) {
+            var shape = [[layer layers] firstObject];
+
+            if(!this.hasLog){
+                this.hasLog = true;
+                this.addLog(layer);
+            }
+
+            if(shape && shape.isKindOfClass(MSRectangleShape)) {
+                layerData.radius = [shape fixedRadius];
+                layerData.style['width'] = Math.ceil([frame width]) +'px';
+                layerData.style['height'] = Math.ceil([frame height]) +'px';
+                layerData.style['border-radius'] = [shape fixedRadius] +'px';
+            }
         }
 
         if(border && [border isEnabled]){
@@ -374,18 +411,6 @@ BayMax.prototype = {
             }
 
             layerData.style['border'] = border.thickness() +'px solid '+ Util.toRGBA(border.color());
-        }
-        
-        //路径图层名字都是shap，需要换成parentGroup的名称
-        if(layer && layer.isKindOfClass(MSShapeGroup)) {
-            layerData.name = [[layer parentGroup] name] + '';
-            
-            var shape = [[layer layers] firstObject];
-
-            if(shape && shape.isKindOfClass(MSRectangleShape)) {
-                layerData.radius = [shape fixedRadius];
-                layerData.style['border-radius'] = [shape fixedRadius] +'px';
-            }
         }
 
         if(fill){
@@ -413,7 +438,7 @@ BayMax.prototype = {
             }
         }
 
-        if (shadow) {
+        if(shadow) {
             if (layerType == 'MSTextLayer') {
                 layerData['style']['text-shadow'] = shadow;
             }else{
@@ -437,11 +462,9 @@ BayMax.prototype = {
         var currentArtboard = self.allArtboards[self.index];
         //画板所在页面id
         var artboardPageId = [[currentArtboard parentGroup] objectID] + '';
-
         //console.log('pageID: '+ artboardPageId);
         //当前画板id
         var artboardId = [currentArtboard objectID] + '';
-
         //console.log('index: '+ self.index);
         //当前画板图层数据
         var layerData = this.sketchData.artboard[artboardId]['layer'];
@@ -465,8 +488,8 @@ BayMax.prototype = {
                 scale: 2
             }
 
-            if(theLayer.zindex){
-                self.zIndex = theLayer.zindex;
+            if(theLayer.zIndex){
+                self.zIndex = theLayer.zIndex;
             }
 
             /*
@@ -478,13 +501,13 @@ BayMax.prototype = {
             if([layer isVisible]){
                 switch(className){
                     case 'MSTextLayer':
-                        layerData.push(self.getLayerData(layer));
+                        layerData.push(self.getLayerData(layer, self.zIndex));
                         //zIndex递增
                         self.zIndex++;
                         break;
 
                     case 'MSBitmapLayer':
-                        layerData.push(self.getLayerData(layer));
+                        layerData.push(self.getLayerData(layer, self.zIndex));
                         //导出位图
                         self.sketchData.exportEveryLayer && self.exportLayer(layer, exprotConfig);
                         //zIndex递增
@@ -493,53 +516,103 @@ BayMax.prototype = {
 
                     case 'MSShapeGroup':
                         //按组导出形状
-                        layerData.push(self.getLayerData(layer));
+                        layerData.push(self.getLayerData(layer, self.zIndex));
                         //导出形状
                         self.sketchData.exportEveryLayer && self.exportLayer(layer, exprotConfig);
                         //zIndex递增
                         self.zIndex++;
+
                         break;
 
                     case 'MSLayerGroup':
                         var frame = layer.frame();
-                        if(frame.width() * frame.height() < 2500 && !self.hasTextLayer(layer)){
-                            //w*h < 24 * 50并且不包含文字图层按组导出
+                        if(frame.width() < 50 && frame.height() < 2500 && !self.hasTextLayer(layer)){
+                            //w、h都<50并且不包含文字图层按组导出
                             //按组导出形状
-                            layerData.push(self.getLayerData(layer));
+                            layerData.push(self.getLayerData(layer, self.zIndex));
                             //导出形状
                             self.sketchData.exportEveryLayer && self.exportLayer(layer, exprotConfig);
                             //zIndex递增
                             self.zIndex++;
                         }else{
                             var childLayers = layer.layers().array();
-                            //组中子节点是否包含蒙版
-                            //var childHasMask = false;
+                            //蒙版起始zindex
+                            var maskStartIndex = null;
+                            //蒙版图层
+                            var maskLayer = null;
+                            var maskLayerId = '';
+                            var maskLayerFrame = null;
+                            //蒙版以及蒙版后的图层
+                            var maskChildLayer = [];
+                            //超出蒙版图层的图层列表
+                            var outerMaskLayer = [];
+                            //在蒙版图层内部的图层列表
+                            var innerMaskLayer = [];
+
                             Util.each(childLayers, function(childLayer, n){
                                 var prevCount = 0;
-                                var zIndex = self.zIndex + (n + 2);
+                                var zIndex = self.zIndex + n;
+                                var childLayerId = [childLayer objectID]+ '';
+                                var frame = [childLayer absoluteRect];
 
-                                //当前图层不为蒙版
-                                if(n > 1){
-                                    prevCount = [[[childLayers objectAtIndex: n-1] children] count];
-                                }
+                                if(!maskStartIndex){
+                                    /*
+                                     * 当前图层不为蒙版时计算zIndex
+                                     * 取 children.count()的计算方法其实是不够严谨的，因为会得到很多"没用"的图层
+                                     * 但是只要整体小于后面的文件夹zindex初始值就没有什么问题
+                                     */
+                                    if(n > 1){
+                                        zIndex += [[[childLayers objectAtIndex: n-1] children] count];
+                                    }
 
-                                //当前图层为蒙版时设置zIndex为当前可用的最大值
-                                if(childLayer.hasClippingMask()){
-                                    zIndex = [[layer children] count];
+                                    if([childLayer hasClippingMask] == 0){
+                                        //把子图层组下的所有图层加入到下一次遍历的队列中
+                                        nextQueue.push({
+                                            //保存zindex计数
+                                            zIndex: zIndex,
+                                            layer: childLayer
+                                        });
+                                    }else{
+                                        maskStartIndex = zIndex;
+                                        //保存蒙版图层
+                                        maskLayer = childLayer;
+                                        maskLayerId = [childLayer objectID]+ '';
+                                        maskLayerFrame = frame;
+                                        //记录蒙版数据
+                                        self.sketchData.maskData[maskLayerId] = [];
+                                    }
+
+                                    self.zIndex = zIndex;
                                 }else{
-                                    zIndex += prevCount;
+                                    /*
+                                     * sketch中下面的图层会被上面的图层覆盖。对于某个包含蒙版(mask)的图层来说，有可能出现这样的情况：
+                                     * 从下往上：layer1 - layer2 - maskLayer3 layer4 - layer5 - layer6
+                                     * 从layer3开始，4-6都是蒙版内的背景图层，背景图层中比layer3小的图层需要能正常显示出来
+                                     * 所以不能把mask的zIndex设为最大，需要根据尺寸大小决定位置 
+                                     */ 
+                                    if([frame x] > [maskLayerFrame x] && [frame y] > [maskLayerFrame y] 
+                                        && [frame width] < [maskLayerFrame width] 
+                                        && [frame height] < [maskLayerFrame height]){
+                                        innerMaskLayer.push(childLayer);
+                                    }else{
+                                        outerMaskLayer.push(childLayer);
+                                        self.sketchData.maskData[maskLayerId].push(childLayerId);
+                                    }
                                 }
+                            });
 
-                                //把子图层组下的所有图层加入到下一次遍历的队列中
+                            //按zindex倒序添加到数组
+                            maskChildLayer = maskChildLayer.concat(outerMaskLayer);
+                            maskChildLayer.push(maskLayer);
+                            maskChildLayer = maskChildLayer.concat(innerMaskLayer);
+
+                            Util.each(maskChildLayer, function(childLayer, cIndex){
                                 nextQueue.push({
                                     //保存zindex计数
-                                    zindex: zIndex,
+                                    zIndex: maskStartIndex + cIndex + 1,
                                     layer: childLayer
                                 });
                             });
-
-                            //zIndex递增
-                            self.zIndex += [[layer children] count] + 10;
                         }
                         break;
                 }
@@ -632,7 +705,7 @@ function onRun(context){
     doc = context.document;
 
     //Whilst the value is set to true, Sketch will attempt to keep the CocoaScript context for the plugin alive. Setting it to false will cause the context to be cleaned up.
-    //[[COScript currentCOScript] setShouldKeepAround:true]
+    [[COScript currentCOScript] setShouldKeepAround:true]
 
     new BayMax().run();
 }

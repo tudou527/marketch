@@ -21,17 +21,16 @@ a:hover {text-decoration:none;}
 a {color:#333}
 a:hover {color:#06c;}
 input[type=text], textarea {outline:0;padding:3px;}
-
-.page {position:relative;padding:30px 0 0 0;}
-    .switch {position:fixed;left:50%;margin-left:-400px;top:0;padding:5px 0;width:800px;font-size:0;text-align:center;}
-        .switch select {margin:0 10px;font-size:14px;}
+.page {position:relative;padding:60px 0 0 20px;overflow:hidden;}
+    .switch {position:fixed;top:0;right:0;left:0;z-index:10;padding:5px 0;height:30px;font-size:0;text-align:center;background:#2B3A48;box-shadow:0 0 10px rgba(0,0,0,.4)}
+        .switch select {margin:6px 10px;font-size:14px;}
         .switch a {display:inline-block;font-size:14px;vertical-align:middle;}
-    .wrap {position:relative;z-index:0;overflow:hidden;}
+    .wrap {position:relative;z-index:0;}
     .wrap:after {content:'';display:block;clear:both;height:0;overflow:hidden;}
         .wrap-layer {display:none;background-size:100% 100% !important;}
         .wrap-layer-active {display:block;}
-            .wrap-layer div {box-sizing:border-box;}
-            .wrap-layer div[aid]:hover {border:1px solid #004BD2;}
+            .wrap-layer div {box-sizing:border-box;overflow:hidden;}
+            .wrap-layer div[id]:hover {border:1px solid #004BD2;}
 
         .sketch-marker {position:absolute;visibility:hidden;top:140px;left:300px;z-index:9;border:1px solid #FE3B00;width:200px;height:200px;text-align:center;vertical-align:center;pointer-events:none;background:rgba(0,0,0);}
             .sketch-marker-disable b {visibility:hidden;}
@@ -75,8 +74,9 @@ input[type=text], textarea {outline:0;padding:3px;}
             .skm-r-top:before, .skm-r-bottom:before {top:0;left:-5px;}
             .skm-r-top:after, .skm-r-bottom:after {bottom:0;left:-5px;}
 
-    .panel {position:fixed;top:0;right:-200px;bottom:0;z-index:1;padding:10px 5px 10px 10px;width:185px;color:#fff;background:#2B3A48;-webkit-transition:right 0.1s ease-in-out;}
-    .panel-active {right:0;box-shadow:-2px 0 5px rgba(0,0,0,.4);}
+    .panel {position:fixed;top:00px;z-index:11;right:-200px;bottom:0;padding:50px 5px 10px 10px;width:185px;color:#fff;background:#2B3A48;-webkit-transition:right 0.1s ease-in-out;}
+    .panel-active {right:0;box-shadow:-2px 0 10px rgba(0,0,0,.4);}
+        .panel-active:after {content:'';position:absolute;top:0;left:-12px;height:40px;width:20px;background:#2B3A48;}
         .panel dl {margin-bottom:20px;}
             .panel dt {position:relative;height:18px;line-height:18px;}
                 .panel dt span {position:relative;z-index:2;padding:0 5px 0 0;color:#ddd;background:#2B3A48;}
@@ -248,7 +248,7 @@ Marketch.prototype = {
 
                 //位置和尺寸都要像左上方移动1px，避免测量准确的问题
                 artHtml.push(
-                    '<div aid="', layer.id ,'" style="',
+                    '<div id="', layer.id ,'" style="',
                         'position:absolute;top:', (layer.y - baseY - 1) ,'px;',
                         'z-index:', layer.zIndex , ';',
                         'left:', (layer.x - baseX - 1) ,'px;',
@@ -266,10 +266,52 @@ Marketch.prototype = {
                 height: artboard.height,
                 background: 'url('+ artboard.id +'/artboard.png)'
             }).appendTo($('#wrap'));
+
+            self.resetMask({
+                node: targetEl,
+                artboardId: artboardId
+            })
         }
 
         $('#wrap .wrap-layer-active').removeClass('wrap-layer-active');
         targetEl.addClass('wrap-layer-active');
+    },
+
+    resetMask: function(obj){
+        var self = this;
+        var node = obj.node;
+
+        $.each(self.sketchData.maskData, function(maskId, childLayers){
+            var el = node.find('#'+ maskId);
+            var elTop = 0;
+            var elLeft = 0;
+
+            if(el.size() > 0){
+                elTop = parseInt(el.css('top').replace('px', ''), 10);
+                elLeft = parseInt(el.css('left').replace('px', ''), 10);
+
+                $.each(childLayers, function(index, artboardId){
+                    var target = node.find('#'+ artboardId);
+                    var tarTop = 0;
+                    var tarLeft = 0;
+                    var cloneNode = null;
+
+                    if(target){
+                        cloneNode = target.clone();
+                        tarTop = parseInt(target.css('top').replace('px', ''), 10);
+                        tarLeft = parseInt(target.css('left').replace('px', ''), 10);
+
+                        cloneNode.css({
+                            top: tarTop - elTop,
+                            left: tarLeft - elLeft
+                        }).appendTo(el);
+                        target.remove();
+                    }
+                })
+            }
+        });
+
+        return node;
     },
 
     bind: function(){
@@ -277,10 +319,10 @@ Marketch.prototype = {
 
         $('#wrap').on('click', function(e){
             var el = $(e.target);
-            var aid = el.attr('aid');
+            var id = el.attr('id');
 
-            if(aid){
-                if(!self.cache.selected || aid != self.cache.selected.attr('aid')){
+            if(id){
+                if(!self.cache.selected || id != self.cache.selected.attr('id')){
                     self.cache.selected = el;
 
                     $('#sketch-marker').css('visibility', 'visible').removeClass('sketch-marker-disable');
@@ -297,12 +339,12 @@ Marketch.prototype = {
         })
         .on('mousemove', function(e){
             var el = $(e.target);
-            var aid = el.attr('aid');
+            var id = el.attr('id');
 
-            if(aid){
+            if(id){
                 if(self.cache.selected){
                     //有被选中的图层时显示距离
-                    if(aid != self.cache.selected.attr('aid') ){
+                    if(id != self.cache.selected.attr('id') ){
                         self.cache.target = el;
                         $('#sketch-marker').addClass('sketch-marker-disable');
                         self.showRuler();
@@ -314,7 +356,7 @@ Marketch.prototype = {
             }
         })
         .on('mouseout', function(e){
-            if(e.target.getAttribute('aid')){
+            if(e.target.getAttribute('id')){
                 $('#sketch-marker').removeClass('sketch-marker-disable');
                 self.cache.target = null;
                 self.changeRulerState('none', {});
@@ -339,7 +381,7 @@ Marketch.prototype = {
 
     showPanel: function(){
         var selected = this.cache.selected;
-        var objectId = selected.attr('aid');
+        var objectId = selected.attr('id');
         var layerData = this.currentAbData[objectId];
         var html = [];
 
