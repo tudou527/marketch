@@ -326,7 +326,7 @@ var Util = Util || (function() {
 
     my.getFontWeight = function( font ){
         var weight = fontManager.weightOfFont(font);
-        return weight >=9 ? '700': '';
+        return weight > 7 ? '700': '';
     }
 
     my.getTextAlign = function(layer){
