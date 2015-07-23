@@ -333,7 +333,7 @@ BayMax.prototype = {
         //填充
         var fill = layerStyle.fills().firstObject();
 	    //不透明度
-        var opacity = layerStyle.contextSettings().opacity().toFixed(2);
+        var opacity = layerStyle.contextSettings().opacity();
 
         //console.log([layer name]);
         //console.log('\t\t\t: '+ frame);
@@ -404,7 +404,7 @@ BayMax.prototype = {
         }
 
         if (opacity && (opacity !== 1)) {
-            layerData['style']['opacity'] = opacity;
+            layerData['style']['opacity'] = opacity.toFixed(2);
         }
 
         return layerData;
