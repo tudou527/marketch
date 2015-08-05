@@ -427,10 +427,13 @@ BayMax.prototype = {
             layerData.html = [layer stringValue] +'';
 
             layerData.style['line-height'] = Math.ceil([layer lineSpacing]) +'px';
-            layerData.style['text-align'] = Util.getTextAlign(layer);
             layerData.style['font-size'] = Math.ceil([layer fontSize]) +'px';
             layerData.style['color'] = Util.toRGBA(layer.textColor());
             layerData.style['font-family'] = [font familyName] +'';
+
+            if(Util.getTextAlign(layer)) {
+                layerData.style['text-align'] = Util.getTextAlign(layer);
+            }
 
             if(Util.getFontWeight(font) != ''){
                 layerData['style']['font-weight'] = Util.getFontWeight(font);
