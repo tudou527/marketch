@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>demo</title>
 <style>
+html,body {overflow:hidden;width:100%;height:100%;position:relative;}
 body,h1,h2,h3,h4,h5,h6,p,blockquote,dl,dt,dd,ul,ol,li,pre,form,fieldset,legend,button,input,textarea,th,td {margin:0;padding:0;}
 body,button,input,select,textarea {font: 12px/1.5 tahoma,arial,'Hiragino Sans GB',\5FAE\8F6F\96C5\9ED1,sans-serif;}
 h1,h2,h3,h4,h5,h6,button,input,select,textarea {font-size:100%;}
@@ -21,10 +22,14 @@ a:hover {text-decoration:none;}
 a {color:#333}
 a:hover {color:#06c;}
 input[type=text], textarea {outline:0;padding:3px;}
-.page {position:relative;padding:60px 0 0 0;overflow:hidden;font-family:"HelveticaNeue-thin";}
-    .switch {position:fixed;top:0;right:0;left:0;z-index:12;padding:0;height:55px;font-size:0;background:#4A90D2;box-shadow:0 0 10px rgba(0,0,0,.4)}
-        .unit {float:right;z-index:13;font-size:16px;margin-right:120px;line-height:55px;color:#fff;cursor:pointer;}
-        .dropdown {position:absolute;width:200px;right:20px;top:40px;z-index:13;display:none;box-shadow:0 0 10px rgba(0,0,0,.5);border-radius:3px;}
+.more:after {transition:all .2s ease-in-out;content:'';display:inline-block;position:absolute;top:15px;right:15px;width:8px;height:8px;border-top:1px solid #fff;border-right:1px solid #fff;transform:rotate(45deg);}
+.active .more:after {transform:rotate(135deg);}
+.active.more:after {transform:rotate(135deg);}
+.page {height:100%;width:100%;position:relative;overflow:hidden;font-family:"'Helvetica Neue',Helvetica,Arial;";}
+    .switch {padding:0;height:55px;font-size:0;background:#4A90D2;box-shadow:0 0 6px rgba(0,0,0,.2)}
+        .unit {position:relative;float:right;z-index:13;font-size:16px;margin-right:80px;line-height:55px;color:#fff;cursor:pointer;}
+        .unit.more:after {top:21px;right:-20px;}
+        .dropdown {position:absolute;width:200px;right:57px;top:40px;z-index:13;display:none;box-shadow:0 0 10px rgba(0,0,0,.5);border-radius:3px;}
         .dropdown.active {display:block}
             .dropdown li {padding:5px 5px;cursor:pointer;}
             .dropdown li:first-child {border-top-left-radius:3px;border-top-right-radius:3px;}
@@ -33,23 +38,24 @@ input[type=text], textarea {outline:0;padding:3px;}
             .dropdown li:nth-child(even) {background:#f2f3f7;}
             .dropdown li:hover {background:#E1E8EF;}
         .brand {z-index:13;color:#fff;font-family:"AndaleMono";font-size:25px;font-weight:bold;display:inline-block;line-height:55px;background:#3882BD;width:180px;text-align:center;}
-        .switch ul {margin:6px 10px;font-size:14px;float:right;}
+        .switch ul {margin:0;font-size:14px;float:right;}
         .switch a {display:inline-block;font-size:14px;vertical-align:middle;}
-    .wrap {position:relative;z-index:0;left:180px;}
+    .page-wrap {width:100%;height:100%;margin-top:-55px;}
+    .wrap {position:absolute;top:55px;left:190px;right:0;z-index:0;overflow:auto;bottom:0;}
     .wrap:after {content:'';display:block;clear:both;height:0;overflow:hidden;}
-        .wrap-layer {display:none;background-size:100% 100% !important;}
+        .wrap-layer {display:none;background-size:100% 100% !important;overflow:auto;}
         .wrap-layer-active {display:block;}
             .wrap-layer div {box-sizing:border-box;overflow:hidden;}
             .wrap-layer div[id]:hover {border:1px solid #004BD2;}
 
-        .sketch-marker {position:absolute;visibility:hidden;top:140px;left:300px;z-index:9;border:1px solid #FE3B00;width:200px;height:200px;text-align:center;vertical-align:center;pointer-events:none;background:rgba(0,0,0);}
+        .sketch-marker {position:absolute;visibility:hidden;top:140px;left:300px;z-index:9;border:1px solid #FE3B00;width:200px;height:200px;text-align:center;vertical-align:middle;pointer-events:none;background:rgba(0,0,0);}
             .sketch-marker-disable b {visibility:hidden;}
             .sketch-marker span {position:absolute;z-index:2;width:7px;height:7px;}
                 /* 竖线 */
                 .sketch-marker span:before {content:'';position:absolute;z-index:0;width:1px;height:9999px;border-left:1px dashed #FE3B00;}
                 /* 横线 */
                 .sketch-marker span:after {content:'';position:absolute;z-index:0;height:1px;min-width:9999px;border-bottom:1px dashed #FE3B00;}
-                .sketch-marker em {position:absolute;left:0;top:0;z-index:1;width:5px;height:5px;border:1px solid #FE3B00;border-radius:100%;background:#fff;background:#fff;}
+                .sketch-marker em {position:absolute;left:0;top:0;z-index:1;width:5px;height:5px;border:1px solid #FE3B00;border-radius:100%;background:#fff;}
                 .sketch-marker .skm-tl {top:-4px;left:-4px;}
                     .sketch-marker .skm-tl:before {margin-left:-1px;bottom:100%;}
                     .sketch-marker .skm-tl:after {margin-top:2px;right:-100%;}
@@ -84,9 +90,8 @@ input[type=text], textarea {outline:0;padding:3px;}
             .skm-r-top:before, .skm-r-bottom:before {top:0;left:-5px;}
             .skm-r-top:after, .skm-r-bottom:after {bottom:0;left:-5px;}
 
-    .panel {position:fixed;top:00px;z-index:11;right:-200px;bottom:0;padding:65px 5px 10px 10px;width:185px;color:#fff;background:#2B3A48;-webkit-transition:right 0.1s ease-in-out;}
+    .panel {position:fixed;top:55px;z-index:11;right:-200px;bottom:0;padding:10px 5px 10px 10px;width:185px;color:#fff;background:#2B3A48;-webkit-transition:right 0.1s ease-in-out;}
     .panel-active {right:0;box-shadow:-2px 0 10px rgba(0,0,0,.4);}
-        .panel-active:after {content:'';position:absolute;top:0;left:-12px;height:40px;width:20px;background:#2B3A48;}
         .panel dl {margin-bottom:20px;}
             .panel dt {position:relative;height:18px;line-height:18px;}
                 .panel dt span {position:relative;z-index:2;padding:0 5px 0 0;color:#ddd;background:#2B3A48;}
@@ -101,10 +106,13 @@ input[type=text], textarea {outline:0;padding:3px;}
         .export-btn {padding-top:10px;text-align:center;}
             .panel-export, .panel-export:hover {display:inline-block;padding:0 15px;height:24px;line-height:24px;border-radius:3px;color:#b3b8bd;box-shadow:0 0 3px rgba(0,0,0,.4);background:#434950;}
 
-    .aside {position:fixed;top:0;z-index:11;left:0;bottom:0;padding:55px 0 0 0;width:180px;color:#fff;background:#2B3A48;}
-        .aside h2, .aside h3 {font-weight:normal;}
+    .aside {float:left;width:180px;height:100%;overflow:hidden;overflow-y:auto;color:#fff;background:#2B3A48;}
+        .aside .page-list:first-child {margin-top: 55px;}
+        .aside h2 {padding-right:30px;position:relative;}
+        .aside h2, .aside h3 {font-weight:normal;text-overflow: ellipsis;overflow:hidden;white-space: nowrap;}
         .page-list li {line-height: 45px;text-indent:20px;font-size:16px;cursor:pointer;color:#9CA3A7;box-shadow:0 1px 1px rgba(0,0,0,.2);}
         .page-list li h2:hover, .page-list li.active h2 {background:#3775A8;color:#fff;}
+        .page-list .icon {float:right;position:relative;right:10px;top:12px;}
             .page-list li li {text-indent:40px;}
             .page-list li li:hover, .page-list li li.active {background:#2C3246;}
             .page-list .active .ab-list {display:block;}
@@ -115,7 +123,7 @@ input[type=text], textarea {outline:0;padding:3px;}
 <div class="page">
     <div class="switch">
         <div class="brand" id="brand">Marketch</div>
-        <div class="unit" id="unit">单位：<span>standard</span></div>
+        <div class="unit more" id="unit">单位：<span class="unit-current">standard</span></div>
         <ul class="dropdown" id="dropdown">
             <li data-value="standard">standard</li>
             <li data-value="points">Points @1x (pt)</li>
@@ -129,9 +137,11 @@ input[type=text], textarea {outline:0;padding:3px;}
             <li data-value="xxxhdpi">XXXHDPI @4x (dp)</li>
         </ul>
     </div>
-    <div class="aside" id="aside"></div>
-    <div class="wrap" id="wrap"></div>
-    <div class="panel" id="panel">
+    <div class="page-wrap">
+        <div class="aside" id="aside"></div>
+        <div class="wrap" id="wrap"></div>
+        <div class="panel" id="panel">
+    </div>
     </div>
 </div>
 <script>
@@ -200,7 +210,6 @@ Marketch.prototype = {
         var pageListHtml = [];
         var currentPageId = null;
         //切换单位select
-        var unitSwitcher = $('#sw-unit');
         var unitMap = {
             standard: {
                 unit: "px",
@@ -250,7 +259,7 @@ Marketch.prototype = {
             var data = self.sketchData.pageData[pageId];
 
             pageListHtml.push(
-                '<li data-page="'+ data.pageId +'"><h2>'+ data.name + '</h2>'
+                '<li data-page="'+ data.pageId +'"><h2 class="more" title="' + data.name + '">'+ data.name + '</h2>'
             );
 
             if(index == 0){
@@ -262,7 +271,7 @@ Marketch.prototype = {
             $.each(data.artboardId, function(n, artboardId){
                 var artboradData = self.sketchData.artboard[artboardId];
                 pageListHtml.push(
-                    '<li data-ab="'+ artboradData.id +'"><h3>'+ artboradData.name +'</h3></li>'
+                    '<li data-ab="'+ artboradData.id +'"><h3 title="' + artboradData.name + '">'+ artboradData.name +'</h3></li>'
                 );
             });
 
@@ -284,6 +293,7 @@ Marketch.prototype = {
             //隐藏标记
             $('#sketch-marker').css('visibility', 'hidden');
             $('#panel').removeClass('panel-active');
+            $('#wrap').width($('#wrap').attr('data-width'));
             self.cache.selected = null;
 
             $(this).addClass("active").siblings().removeClass("active");
@@ -298,6 +308,7 @@ Marketch.prototype = {
             //隐藏标记
             $('#sketch-marker').css('visibility', 'hidden');
             $('#panel').removeClass('panel-active');
+            $('#wrap').width($('#wrap').attr('data-width'));
             self.cache.selected = null;
 
             //加载目标画板
@@ -307,9 +318,11 @@ Marketch.prototype = {
         $("#unit").on('click', function() {
             var dropdown = $(this).siblings(".dropdown");
             if (dropdown.hasClass("active")) {
+                $(this).removeClass("active");
                 dropdown.removeClass("active");
                 return;
             }
+            $(this).addClass("active");
             dropdown.addClass("active");
         });
 
@@ -319,11 +332,14 @@ Marketch.prototype = {
             $(this).removeClass("active");
             var unit = $(e.target).attr("data-value");
             var text = $(e.target).text();
-            $('#unit').find('span').text(text);
+            $('#unit').find('.unit-current').text(text);
             self.unit = unitMap[unit];
-            self.selectedLayer();
+            if (self.cache.selected) {
+                self.selectedLayer();
+            }
             self.showPanel();
         }).children().first().click();
+
     },
 
     //加载画板
@@ -414,6 +430,7 @@ Marketch.prototype = {
 
     bind: function(){
         var self = this;
+        $('#wrap').attr('data-width', $('#wrap').width());
 
         $('#wrap').on('click', function(e){
             var el = $(e.target);
@@ -432,6 +449,7 @@ Marketch.prototype = {
                 self.cache.selected = null;
 
                 $('#panel').removeClass('panel-active');
+                $('#wrap').width($('#wrap').attr('data-width'));
                 $('#sketch-marker').css('visibility', 'hidden');
             }
         })
@@ -464,6 +482,7 @@ Marketch.prototype = {
         $("body").on("click", function(e) {
             if (!($(e.target).hasClass("unit") || $(e.target).parent().hasClass("unit"))) {
                 $(".dropdown").removeClass("active");
+                $(".unit").removeClass("active");
             }
         });
     },
@@ -588,6 +607,7 @@ Marketch.prototype = {
         }
 
         $('#panel').html(html.join('')).addClass('panel-active');
+        $('#wrap').width($('#wrap').attr('data-width') - 200);
     },
 
     //格式化css json数据
