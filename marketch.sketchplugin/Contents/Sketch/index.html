@@ -21,6 +21,23 @@ a, a:visited {text-decoration:none;}
 a:hover {text-decoration:none;}
 a {color:#333}
 a:hover {color:#06c;}
+
+/*滚动条样式*/
+::-webkit-scrollbar{
+    width:8px;
+    height:8px;
+}
+::-webkit-scrollbar-track,::-webkit-scrollbar-corner{
+    background:rgba(0,0,0,0);
+}
+::-webkit-scrollbar-thumb{
+    background:rgba(0,0,0,.2);
+    border-radius:4px;
+}
+::-webkit-scrollbar-thumb:hover{
+    background:rgba(0,0,0,.3);
+}
+
 input[type=text], textarea {outline:0;padding:3px;}
 .more:after {transition:all .2s ease-in-out;content:'';display:inline-block;position:absolute;top:15px;right:15px;width:8px;height:8px;border-top:1px solid #fff;border-right:1px solid #fff;transform:rotate(45deg);}
 .active .more:after {transform:rotate(135deg);}
@@ -103,16 +120,17 @@ input[type=text], textarea {outline:0;padding:3px;}
         .export-btn {padding-top:10px;text-align:center;}
             .panel-export, .panel-export:hover {display:inline-block;padding:0 15px;height:24px;line-height:24px;border-radius:3px;color:#b3b8bd;box-shadow:0 0 3px rgba(0,0,0,.4);background:#434950;}
 
-    .aside {float:left;width:180px;height:100%;overflow:hidden;overflow-y:auto;color:#fff;background:#2B3A48;}
+    .aside {position:absolute;top:0;left:0;width:180px;bottom:0;overflow:hidden;overflow-y:auto;color:#fff;background:#2B3A48;}
         .aside h2 {padding-right:30px;position:relative;}
         .aside h2, .aside h3 {font-weight:normal;text-overflow: ellipsis;overflow:hidden;white-space: nowrap;}
-        .page-list li {line-height: 45px;text-indent:20px;font-size:16px;cursor:pointer;color:#9CA3A7;box-shadow:0 1px 1px rgba(0,0,0,.2);}
-        .page-list li h2:hover, .page-list li.active h2 {background:#3775A8;color:#fff;}
-        .page-list .icon {float:right;position:relative;right:10px;top:12px;}
-            .page-list li li {text-indent:40px;}
-            .page-list li li:hover, .page-list li li.active {background:#2C3246;}
-            .page-list .active .ab-list {display:block;}
-            .ab-list {display:none;}
+        .page-list {overflow:hidden;}
+            .page-list li {line-height: 45px;text-indent:20px;font-size:16px;cursor:pointer;color:#9CA3A7;box-shadow:0 1px 1px rgba(0,0,0,.2);}
+            .page-list li h2:hover, .page-list li.active h2 {background:#3775A8;color:#fff;}
+            .page-list .icon {float:right;position:relative;right:10px;top:12px;}
+                .page-list li li {text-indent:40px;}
+                .page-list li li:hover, .page-list li li.active {background:#2C3246;}
+                .page-list .active .ab-list {display:block;}
+                .ab-list {display:none;}
 </style>
 </head>
 <body>
