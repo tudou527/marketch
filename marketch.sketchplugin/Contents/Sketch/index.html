@@ -43,7 +43,7 @@ input[type=text], textarea {outline:0;padding:3px;}
     .page-wrap {width:100%;height:100%;margin-top:-55px;}
     .wrap {position:absolute;top:55px;left:190px;right:0;z-index:0;overflow:auto;bottom:0;}
     .wrap:after {content:'';display:block;clear:both;height:0;overflow:hidden;}
-        .wrap-layer {display:none;background-size:100% 100% !important;overflow:auto;}
+        .wrap-layer {display:none;background-size:100% 100% !important;overflow:auto;position:relative;}
         .wrap-layer-active {display:block;}
             .wrap-layer div {box-sizing:border-box;overflow:hidden;}
             .wrap-layer div[id]:hover {box-shadow: 0 0 0 1px #004BD2 inset;}
@@ -56,16 +56,16 @@ input[type=text], textarea {outline:0;padding:3px;}
                 /* 横线 */
                 .sketch-marker span:after {content:'';position:absolute;z-index:0;height:1px;min-width:9999px;border-bottom:1px dashed #FE3B00;}
                 .sketch-marker em {position:absolute;left:0;top:0;z-index:1;width:5px;height:5px;border:1px solid #FE3B00;border-radius:100%;background:#fff;}
-                .sketch-marker .skm-tl {top:-4px;left:-4px;}
+                .sketch-marker .skm-tl {top:-3px;left:-3px;}
                     .sketch-marker .skm-tl:before {margin-left:-1px;bottom:100%;}
                     .sketch-marker .skm-tl:after {margin-top:2px;right:-100%;}
-                .sketch-marker .skm-tr {top:-4px;right:-4px;}
+                .sketch-marker .skm-tr {top:-3px;right:-3px;}
                     .sketch-marker .skm-tr:before {margin-left:-1px;bottom:100%;}
                     .sketch-marker .skm-tr:after {margin-top:2px;left:-100%;}
-                .sketch-marker .skm-bl {bottom:-4px;left:-4px;}
+                .sketch-marker .skm-bl {bottom:-3px;left:-3px;}
                     .sketch-marker .skm-bl:before {margin-left:-1px;top:100%;}
                     .sketch-marker .skm-bl:after {margin-top:2px;right:-100%;}
-                .sketch-marker .skm-br {bottom:-4px;right:-4px;}
+                .sketch-marker .skm-br {bottom:-3px;right:-3px;}
                     .sketch-marker .skm-br:before {margin-left:-1px;top:100%;}
                     .sketch-marker .skm-br:after {margin-top:2px;left:-100%;}
             
