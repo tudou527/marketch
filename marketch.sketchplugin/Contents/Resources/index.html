@@ -2,15 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title></title>
+    <link rel="stylesheet" href="./css/main.css">
+    <script src="./js/jquery-2.1.4.min.js"></script>
+    <script src="./js/main.js"></script>
 </head>
 <body>
-    <h1 id="title">Hello</h1>
-    <script>
-function changeTitle() {
-    var title = document.getElementById('title');
-    title.innerHTML = "I'm changed by JavaScript!";
-}
-    </script>
+    <div id="token-view" class="view" style="display:none;">
+        <img src="./img/sketch.png" alt="sketch" class="logo">
+        <div id="token-form" class="form-wrap">
+            <h1 class="brand">Marketch</h1>
+            <div class="form-desc">上传至 DEMO 中心</div>
+            <div class="form-desc">初次使用请输入身份 Token</div>
+            <div class="form-group">
+                <input type="text" placeholder="请输入身份 Token">
+                <a href="http://www.baidu.com" target="_blank" class="info">查看身份 Token</a>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn">取消</button>
+            <button class="btn btn-primary">下一步</button>
+        </div>
+    </div>
+    <div id="upload-view" class="view" style="display:none;">
+        <div class="avatar"></div>
+        <div id="upload-form" class="form-wrap">
+            <h1 class="brand">Marketch</h1>
+            <div class="form-desc">上传至 Demo 中心</div>
+            <form class="form" action="javascript:void(0);">
+                <div class="form-group">
+                    <label for="#project">项目</label>
+                    <select id="project" name="project" class="select">
+                        <option value="default" disabled selected>请选择项目</option>
+                    </select>
+                    <a class="info" href="http://www.baidu.com" target="_blank">加入新项目</a>
+                </div>
+                <div class="form-group">
+                    <label for="type">类型</label>
+                    <select id="type" name="type" class="select">
+                        <option value="prototype" selected>交互稿</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button class="btn">取消</button>
+                    <button class="btn btn-primary">下一步</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="result-view" class="view">
+        <div class="avatar"></div>
+        <div id="result-form" class="form-wrap">
+            <h1 class="brand">Marketch</h1>
+            <div class="form-desc">上传至 Demo 中心</div>
+            <div class="form-desc">上传成功！
+                <a class="info" href="http://www.baidu.com" target="_blank">立即查看</a>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
+

@@ -1,0 +1,97 @@
+html, body {
+    height: 230px;
+    width: 540px;
+    margin: 0;
+    padding: 0;
+    font-family: "Helvetica", "Heiti SC";
+}
+
+body {
+    background-color: #ececec;
+    border: solid 1px #fff;
+}
+
+.view {
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+.logo {
+    width: 75px;
+    height: auto;
+    margin: 24px;
+    float: left;
+}
+
+.form-wrap {
+    float: left;
+    margin-top: 30px;
+}
+
+.form-desc {
+    font-size: 12px;
+    margin: 14px 0;
+}
+
+.info {
+    font-size: 14px;
+    color: #4179de;
+    text-decoration: none;
+    margin-left: 11px;
+}
+
+.brand {
+    text-transform: uppercase;
+    font-size: 14px;
+    margin: 14px 0;
+}
+
+.btn-group {
+    text-align: right;
+    position: absolute;
+    bottom: 24px;
+    right: 33px;
+}
+
+.btn {
+    width: 80px;
+    height: 24px;
+    border: none;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(173, 173, 173, .5);
+    margin-right: 20px;
+}
+
+.btn:last-child {
+    margin-right: 0;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #3796fd;
+}
+
+label {
+    font-size: 14px;
+    margin-right: 11px;
+}
+
+.select {
+    width: 224px;
+    height: 27px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 32px;
+    background-color: #000;
+    float: left;
+    margin: 24px;
+}
