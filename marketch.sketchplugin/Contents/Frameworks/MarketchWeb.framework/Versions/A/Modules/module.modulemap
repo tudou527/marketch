@@ -1,0 +1,6 @@
+framework module MarketchWeb {
+  umbrella header "MarketchWeb.h"
+
+  export *
+  module * { export * }
+}
