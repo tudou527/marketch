@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		4005D2C51B7B1CB400074A9B /* MarketchWeb.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4005D2B91B7B1CB400074A9B /* MarketchWeb.framework */; };
 		4005D2CC1B7B1CB400074A9B /* MarketchWebTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4005D2CB1B7B1CB400074A9B /* MarketchWebTests.m */; };
+		4005D2D71B7B2EDD00074A9B /* MarketchWeb.h in Headers */ = {isa = PBXBuildFile; fileRef = 4005D2D51B7B2EDD00074A9B /* MarketchWeb.h */; };
+		4005D2D81B7B2EDD00074A9B /* MarketchWeb.m in Sources */ = {isa = PBXBuildFile; fileRef = 4005D2D61B7B2EDD00074A9B /* MarketchWeb.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,6 +29,8 @@
 		4005D2C41B7B1CB400074A9B /* MarketchWebTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MarketchWebTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4005D2CA1B7B1CB400074A9B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4005D2CB1B7B1CB400074A9B /* MarketchWebTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MarketchWebTests.m; sourceTree = "<group>"; };
+		4005D2D51B7B2EDD00074A9B /* MarketchWeb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MarketchWeb.h; sourceTree = "<group>"; };
+		4005D2D61B7B2EDD00074A9B /* MarketchWeb.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MarketchWeb.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +73,8 @@
 		4005D2BB1B7B1CB400074A9B /* MarketchWeb */ = {
 			isa = PBXGroup;
 			children = (
+				4005D2D51B7B2EDD00074A9B /* MarketchWeb.h */,
+				4005D2D61B7B2EDD00074A9B /* MarketchWeb.m */,
 				4005D2BC1B7B1CB400074A9B /* Supporting Files */,
 			);
 			path = MarketchWeb;
@@ -106,6 +112,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4005D2D71B7B2EDD00074A9B /* MarketchWeb.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -205,6 +212,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4005D2D81B7B2EDD00074A9B /* MarketchWeb.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,6 +403,7 @@
 				4005D2D11B7B1CB400074A9B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		4005D2D21B7B1CB400074A9B /* Build configuration list for PBXNativeTarget "MarketchWebTests" */ = {
 			isa = XCConfigurationList;
@@ -403,6 +412,7 @@
 				4005D2D41B7B1CB400074A9B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
