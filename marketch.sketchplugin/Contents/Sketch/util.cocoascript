@@ -1,183 +1,9 @@
-//This file is base on Sam Deane's code, see the original license below
+var console = (function(){
+    var persistent = [[NSThread mainThread] threadDictionary];
+    var console = persistent.console || '';;
 
-// --------------------------------------------------------------------------
-// Miscellaneous Sketch utilities.
-//
-//  Copyright 2014 Sam Deane, Elegant Chaos. All rights reserved.
-//  This source code is distributed under the terms of Elegant Chaos's
-//  liberal license: http://www.elegantchaos.com/license/liberal
-// --------------------------------------------------------------------------
-
-
-var Config = {
-    show_error : true
-};
-
-var Util = Util || (function() {
-    var my = {},persistent,console
-
-    // perform a come code inside a try/catch block, and log out the error if something goes wrong
-    my.execute = function(block) {
-        try
-        {
-            block();
-        }
-        catch (e)
-        {
-            my.log(e);
-        }
-    }
-
-
-
-    // return the Sketch version number
-    // (we fish this out of the main info dictionary for the application)
-    my.version = function() {
-        var items = my.versionComponents();
-
-        var result = items[0] + "." + items[1];
-        if (items[2] != 0)
-            result += "." + items[2];
-
-        return result;
-    }
-
-    // return the Sketch version number, split into three components
-    // (we fish this out of the main info dictionary for the application)
-    my.versionComponents = function() {
-        var info = [[NSBundle mainBundle] infoDictionary];
-        var items = [[(info["CFBundleShortVersionString"]) componentsSeparatedByString:"."] mutableCopy];
-
-        while(items.length() < 3)
-            [items addObject:"0"];
-
-        return items;
-    }
-
-    // return the main Sketch version number (eg 2 in 2.4.3)
-    my.majorVersion = function() {
-        var items = my.versionComponents();
-
-        return items[0];
-    }
-
-    // return the minor Sketch version number (eg 4 in 2.4.3)
-    my.minorVersion = function() {
-        var items = my.versionComponents();
-
-        return items[1];
-    }
-
-    // return the fix Sketch version number (eg 3 in 2.4.3)
-    my.fixVersion = function() {
-        var items = my.versionComponents();
-
-        return items[2];
-    }
-
-    // return the exact Sketch build number
-    // (we fish this out of the main info dictionary for the application)
-    my.buildNumber = function() {
-        var info = [[NSBundle mainBundle] infoDictionary];
-        var result = info["CFBundleVersion"];
-
-        return result;
-    }
-
-    // perform an action (in the way that a menu or button typically does)
-    // what we're doing here is sending a command (an Objective-C method call)
-    // down a chain of objects (the current window,
-    // the current document, the application, etc) until one responds
-    my.sendAction = function(commandToPerform) {
-        try {
-            [NSApp sendAction:commandToPerform to:nil from:doc]
-        } catch(e) {
-            my.log(e)
-        }
-    };
-
-    // safe implementation of selection, which checks for it being nil
-    // (which it can be before the user first selected anything)
-    my.selection = function() {
-        var selection = doc.selectedLayers();
-        if (selection == null) {
-            selection = [[NSArray alloc] init]
-        }
-
-        return selection;
-    };
-
-    // return a persistent window
-    // this will make the window the first time it's called, but return the
-    // same window next time (even if the next time is during a later execution of the script)
-    my.persistentWindow = function(title, persistName, level, setup) {
-        var window = persistent[persistName];
-        if (window == null) {
-            window = my.makeWindow(title, persistName, level, setup);
-            persistent[persistName] = window;
-        }
-
-        return window;
-    }
-
-    // return a persistent panel
-    // this will make the window the first time it's called, but return the
-    // same window next time (even if the next time is during a later execution of the script)
-    my.persistentPanel = function(title, persistName, setup) {
-        var window = persistent[persistName];
-        if (window == null) {
-            window = my.makePanel(title, persistName, setup);
-            persistent[persistName] = window;
-        }
-
-        return window;
-    }
-
-    // make a new window
-    // this uses native Cocoa code to create a new window object, and set up various properties on it
-    // for more details on NSWindow, see https://developer.apple.com/library/mac/documentation/cocoa/reference/applicationkit/classes/NSWindow_Class/Reference/Reference.html
-    my.makeWindow = function(title, autosave, level, setup) {
-        var frame = NSMakeRect(0,0,512,128);
-        var mask = NSTitledWindowMask + NSClosableWindowMask + NSMiniaturizableWindowMask + NSResizableWindowMask;
-        var window = [[NSWindow alloc] initWithContentRect:frame styleMask:mask backing:NSBackingStoreBuffered defer:true];
-        window.title = title;
-        window.level = level;
-        [window setFrameAutosaveName:autosave];
-
-        setup(window);
-
-        [window setReleasedWhenClosed:false];
-        [window makeKeyAndOrderFront:nil];
-
-        return window;
-    }
-
-    // make a new panel
-    // this uses native Cocoa code to create a new panel object, and set up various properties on it
-    // for more details on NSPanel, see https://developer.apple.com/library/mac/documentation/Cocoa/Reference/ApplicationKit/Classes/NSPanel_Class/Reference/Reference.html
-    my.makePanel = function(title, autosave, setup) {
-        var frame = NSMakeRect(0,0,512,128);
-        var mask = NSTitledWindowMask + NSClosableWindowMask + NSMiniaturizableWindowMask + NSResizableWindowMask + NSUtilityWindowMask;
-        var window = [[NSPanel alloc] initWithContentRect:frame styleMask:mask backing:NSBackingStoreBuffered defer:true];
-        window.title = title;
-        window.floatingPanel = true;
-        [window setFrameAutosaveName:autosave];
-
-        setup(window);
-
-        [window setReleasedWhenClosed:false];
-        [window makeKeyAndOrderFront:nil];
-
-        return window;
-    }
-
-    // make a new log window
-    // we use Cocoa here to create a native window, and then we create a scrollview+textview combination
-    // as the context, which gives us a scrolling text field
-    // as luck would have it, Apple have some documentation describing this process:
-    // https://developer.apple.com/library/mac/documentation/cocoa/conceptual/TextUILayer/Tasks/TextInScrollView.html#//apple_ref/doc/uid/20000938-CJBBIAAF
-    my.logWindow = function() {
-        var window = my.persistentPanel("Console", "LogWindow", function(window) {
+    function logWindows(){
+        var window = persistentPanel('Console', 'LogWindow', function(window) {
             var scrollview = [[NSScrollView alloc] initWithFrame:[[window contentView] frame]];
             var contentSize = [scrollview contentSize];
 
@@ -202,452 +28,190 @@ var Util = Util || (function() {
         });
 
         return window;
-    };
+    }
 
-    // log something to our console window
-    // we set the window up first if necessary, then
-    // append the log message to the bottom of it and scroll the new line into view
-    my.log = function(message) {
-        if( !Config.show_error ){
-            return
-        }else{
-            //first time
-            if( !persistent ){
-                persistent = [[NSThread mainThread] threadDictionary]
-                console = persistent["console"]
-            }
+    function makePanel(title, autosave, setup) {
+        var frame = NSMakeRect(0,0,512,128);
+        var mask = NSTitledWindowMask + NSClosableWindowMask + NSMiniaturizableWindowMask + NSResizableWindowMask + NSUtilityWindowMask;
+        var window = [[NSPanel alloc] initWithContentRect:frame styleMask:mask backing:NSBackingStoreBuffered defer:true];
+        window.title = title;
+        window.floatingPanel = true;
+        [window setFrameAutosaveName:autosave];
 
-            if( arguments.length !== 1 ){
-                message = Array.prototype.join.call( arguments, ", " )
-            }
+        setup(window);
 
-            var logWindow = my.logWindow();
-            [logWindow makeKeyAndOrderFront:nil];
+        [window setReleasedWhenClosed:false];
+        [window makeKeyAndOrderFront:nil];
 
-            var text = message;
-            //var text = JSON.stringify(message);
+        return window;
+    }
 
-            view = [[logWindow contentView] documentView];
-            if (console == null)
-                console = "";
-
-            var now = new Date();
-            var time = now.toLocaleTimeString().split(" ")[0];
-            console = console + time + " " + text + "\n";
-            [view setString:console];
-            log(text);
-            persistent["console"] = console;
-            [view scrollRangeToVisible: NSMakeRange(view.string.length, 0)];
+    function persistentPanel(title, persistName, setup) {
+        var window = persistent[persistName];
+        if (window == null) {
+            window = makePanel(title, persistName, setup);
+            persistent[persistName] = window;
         }
-    };
 
-    my.launch = function(cmd, arguments) {
-        var task = [[NSTask alloc] init];
-        [task setLaunchPath:cmd];
-
-        if (arguments)
-            [task setArguments:arguments];
-
-        var pipe = [NSPipe pipe];
-        [task setStandardOutput: pipe];
-
-        var file = [pipe fileHandleForReading];
-
-        [task launch];
-
-        var data = [file readDataToEndOfFile];
-        var output = [[NSString alloc] initWithData: data encoding:NSUTF8StringEncoding];
-
-        log(output);
-    };
-
-    my.save_file_from_string = function(filename, fileString) {
-        new AppSandbox().authorize( Config.home_folder, function() {
-            var path = [@"" stringByAppendingString:filename],
-            str = [@"" stringByAppendingString:fileString];
-//            var str = [[[NSString alloc] initWithString:fileString] autorelease]
-
-//            fileString = null
-
-            [str writeToFile:path atomically:true encoding:NSUTF8StringEncoding error:null];
-        })
+        return window;
     }
 
-    var file_manager = [NSFileManager defaultManager]
+    return {
+        log: function(msg){
+            var logWindow = logWindows();
+            var time = new Date().toString().split(' ')[4];
+            var view = logWindow.contentView().documentView();
 
-    my.create_folders =function ( folders ){
-        new AppSandbox().authorize( Config.home_folder, function(){
-            var i = [folders count] - 1
-            for( ; i >-1 ;i-- ){
-                [file_manager createDirectoryAtPath:[folders objectAtIndex:i] withIntermediateDirectories:true attributes:nil error:nil];
+            if(Object.prototype.toString.call(msg) == '[object Array]'){
+                msg = msg.join(', ');
             }
-        })
-    }
 
-    my.remove_folder = function( folder ){
-        Util.log("removing file at :"+folder)
-            [file_manager removeItemAtPath:folder error:nil]
-    }
+            if(Object.prototype.toString.call(msg) == '[object Object]'){
+                msg = JSON.stringify(msg);
+            }
 
-    my.folder_exist = function( folder ){
-        return [file_manager fileExistsAtPath:folder]
-    }
+            console = console +'['+ time +']' + ' '+ msg + '\n';
+            logWindow.makeKeyAndOrderFront(nil);
 
-    my.copy = function ( org, tar ){
-        Util.log('copy file:' )
-        Util.log( 'from: ' + org )
-        Util.log( 'to  : ' + tar )
+            log(msg);
+            view.setString(console);
+            log(msg);
+            persistent.console = console;
+            view.scrollRangeToVisible(NSMakeRange(view.string.length, 0));
+            [[view textStorage] setFont:[NSFont fontWithName:@"Consolas" size:11]];
+        },
+        clear: function(){
+            var logWindow = logWindows();
+            var view = logWindow.contentView().documentView();
+            
+            logWindow.makeKeyAndOrderFront(nil);
 
-        if( [file_manager fileExistsAtPath:org]){
-            [file_manager copyItemAtPath:org toPath:tar error:nil];
-        }else{
-            Util.log('cannot copy,file not exist: '+org)
+            console = '';
+            view.setString('');
         }
     }
+})();
 
-    my.uniq = (function(){
-        var cache = {}
-
-        return function( str ){
-
-            str = str ? str.replace("-","_") : 'noname'
-
-            if( !cache[str] ){
-                cache[str] = 1
-                return str
-            }else{
-                cache[str] += 1
-                return str + "-" + String(cache[str])
-            }
-        }
-    })();
-
-    var fontManager = [NSFontManager sharedFontManager]
-
-    my.getFontWeight = function( font ){
+var util = {
+    //获取文字图层字体样式
+    getFontWeight: function(font){
+        var fontManager = [NSFontManager sharedFontManager];
         var weight = fontManager.weightOfFont(font);
-        return weight > 7 ? '700': '';
-    }
+        return weight > 7 ? '700': null;
+    },
 
-    my.getTextAlign = function(layer){
+    //字体对齐方式
+    getTextAlign: function(layer){
         var align = ['left','right','center','justify'];
-        return align[layer.textAlignment()] ? align[layer.textAlignment()] : '';
-    }
+        return align[layer.textAlignment()] ? align[layer.textAlignment()] : null;
+    },
 
-    my.getShadow = function(layer){
-        var shadowStyle = [];
-        var shadows = [];
-        var innerShadows = [];
-        if(layer.style){
-            shadows = [[layer style] shadows];
-            innerShadows = [[layer style] innerShadows];
-        }
-        each(shadows, function(shadow, index){
-            if(!shadow.isEnabled()){
-                return;
-            }
-            shadowStyle.push(
-                [shadow.offsetX(), shadow.offsetY(), shadow.blurRadius(), shadow.spread()].map(function(i){
-                    return i+"px"
-                }).join(' ') + " " + my.toRGBA(shadow.color())
-            )
-        });
-        each(innerShadows, function(innerShadow, index){
-            if(!innerShadow.isEnabled()){
-                return;
-            }
-            shadowStyle.push(
-                [innerShadow.offsetX(), innerShadow.offsetY(), innerShadow.blurRadius(), innerShadow.spread()].map(function(i){
-                    return i + "px";
-                }).join(' ') + " " + my.toRGBA(innerShadow.color()) + " inset"
-            )
-        });
-
-        return shadowStyle.length > 0 ? shadowStyle.join(', ') : null;
-    }
-
-    my.colorToHex = function(rgb) {
-        var _this = rgb;
-        var reg = /^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$/;
-        if (/^(rgb|RGB)/.test(_this)) {
-            var aColor = _this.replace(/(?:\(|\)|rgb|RGB)*/g, "").split(",");
-            var strHex = "#";
-            for (var i = 0; i < aColor.length; i++) {
-                var hex = Number(aColor[i]).toString(16);
-                hex = hex < 10 ? 0 + '' + hex : hex; // 保证每个rgb的值为2位
-                if (hex === "0") {
-                    hex += hex;
-                }
-                strHex += hex;
-            }
-            if (strHex.length !== 7) {
-                strHex = _this;
-            }
-            return strHex;
-        } else if (reg.test(_this)) {
-            var aNum = _this.replace(/#/, "").split("");
-            if (aNum.length === 6) {
-                return _this;
-            } else if (aNum.length === 3) {
-                var numHex = "#";
-                for (var i = 0; i < aNum.length; i += 1) {
-                    numHex += (aNum[i] + aNum[i]);
-                }
-                return numHex;
-            }
-        } else {
-            return _this;
-        }
-    }
-
-
-    my.toRGBA = function( color ){
-        var rgba = String( color ).replace(/[\(\)]/g,'').split(' ').map(function(v){
-            var t = v.split(":"),type = t[0],value=t[1]
-            if( type !== 'a' ){
-                return Math.round( Number(value) * 255)
-            }
-            return Number(value).toFixed(2)
-        });
-
-        if(rgba[3] == 1){
-            return my.colorToHex('rgb('+ rgba.slice(0, 3).join(',') +')');
-        }else{
-            return 'rgba('+ rgba.join(',') +')';
-        }
-    }
-
-    my.style_to_string = function( styleObj ){
-        return join( map( styleObj, function( styles ){
-            return join( styles, ":",';\n')
-        }), ' {\n', '\n}\n') + '\n}'
-    }
-
-    //是否为图层（不包含group）
-    my.isLayer = function(layer){
-        return in_array(['MSOvalShape', 'MSRectangleShape','MSTextLayer','MSShapePathLayer','MSBitmapLayer','MSShapePath'], layer.className().toString());
-    }
-
-    //是否为文字图层
-    my.isTextLayer = function(layer){
-        return layer.className().toString() == 'MSTextLayer';
-    }
-
-    //是否为文件夹
-    my.isLayerGroup = function(layer){
-        return layer.className().toString() == 'MSLayerGroup';
-    }
+    //转换版本号
+    convertVersion: function(version){
+        return parseFloat(version.match(/\d/gi).join(''), 10);
+    },
 
     /*
      * 消息提示
      * obj.title
      * obj.content
      */
-    my.showTips = function(obj){
-        var title = obj.title || 'Marketch for Sketch';
+    showTips: function(obj){
+        var title = obj.title || 'Marketch';
         var app = [NSApplication sharedApplication];
 
         [app displayDialog:obj.content withTitle:title];
-        /*
-        var altWin = [COSAlertWindow new];
-        var icon = NSImage.alloc().initByReferencingFile(this.pluginPath +'/Contents/Sketch/assets/icon.ico');
-        
-        altWin.setIcon(icon);
-        altWin.addButtonWithTitle('OK')
+    },
 
-        altWin.setMessageText(obj.title || 'Marketch');
-        altWin.setInformativeText(obj.content);
-        return altWin.runModal();
-        */
-    }
-
-    function join( obj, kvSplitor, itemSplitor ){
-        if( typeof obj !== 'object') return false
-
-        return  values( map( obj, function(v,k){
-            return k+kvSplitor+v
-        })).join( itemSplitor )
-    }
-
-    function map( obj, cb ){
-        if( Object.prototype.toString.call(obj) == '[object Array]'){
-            return obj.map(cb)
-        }else if( typeof obj == 'object' ){
-            var output = {}
-            for( var i in obj ){
-                if( obj.hasOwnProperty(i) && typeof obj[i] !== 'function' ) {
-                    output[i] = cb(obj[i], i)
-                }
-            }
-            return output
-        }
-
-        return false
-    }
-
-    function values( obj ) {
-        var _values = []
-
-        for( var i in obj ){
-            if( obj.hasOwnProperty(i) && typeof obj[i] !== 'function' ) {
-                _values.push( obj[i] )
-            }
-        }
-        return _values
-    }
-
-    function in_array( array, item ){
-        var found = false
-        for( var i in array ){
-            if( item == array[i] ){
-                found = true
-                break
-            }
-        }
-        return found
-    }
-
-    function each( obj, iterator ){
-        var i,length
-        
-        if(!obj){
-            return false;
-        }
-
-        if(obj.count && obj.count() > 0 && obj.className ){
-            length = [obj count]
-
-            for( i=0;i<length;i++){
-                [obj objectAtIndex:i] && iterator([obj objectAtIndex:i], i)
-            }
-        }else if( Object.prototype.toString.call(obj) == '[object Array]'){
-            length = obj.length;
-            if(length > 0){
-                for( i=0;i<length;i++){
-                    obj[i] && iterator(obj[i],i)
-                }
-            }
-        }else if( typeof obj == 'object'){
-            for( i in obj ){
-                iterator( obj[i], i)
-            }
-        }else{
-            Util.log("cannot iterator this obj of "+ (obj.className ? obj.className() : (typeof obj)))
-        }
-    }
-
-    function extend( tar, src ){
-        each( src, function( v,k){
-            if( Object.prototype.toString.call( v) == '[object Object]'){
-                tar[k] = {}
-                extend( tar[k], src[k])
-            }else if( Object.prototype.toString.call( v) == '[object Array]'){
-                tar[k] = []
-                extend( tar[k], src[k])
-            }else{
-                tar[k] = src[k]
-            }
-        })
-
-        return tar
-    }
-
-    function wrap_script( script ){
-        if( typeof script == 'object'){
-            var arr = script
-            for( var i in arr ){
-                if( typeof arr[i] == 'function' ){
-                    arr[i] = wrap_execute_imediate( String(arr[i] ))
-                }
-            }
-            script = arr.join(';\n')
-        }
-
-        return ';(function(){\n' + script + '\n})();\n'
-    }
-
-    function render_variables( vars ){
-        var output = []
-        for( var varName in vars ){
-            if( typeof vars[varName] == 'object') {
-                //object or array
-                output.push(varName + '=' + JSON.stringify(vars[varName]))
-            }else if( typeof vars[varName] == 'string'){
-                //string
-                output.push(varName + '="' + vars[varName]+'"')
-            }else{
-                //undefined bool number
-                output.push( varName + '=' + String(vars[varName]) )
-            }
-        }
-        return "var "+output.join(',')
-    }
-
-    function wrap_execute_imediate( functionStr ){
-        return ';(' + functionStr +')();\n'
-    }
-
-    function script_to_string( scriptObj ){
-        return wrap_script([render_variables(scriptObj.vars),scriptObj.body])
-    }
-
-    function getJSON(url){
+    //从网络同步加载json数据
+    getJSON: function(url){
         var url = [NSURL URLWithString:url];
         var request = [NSMutableURLRequest requestWithURL:url];
         var response = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
         var result = [NSJSONSerialization JSONObjectWithData:response options:nil error:nil];
         return result;
-    }
+    },
 
-    //多语言配置
-    var I18N = {
-        'zh-cn': {
-            'EXPORT': '导出',
-            'EXPORTTO': '导出到：',
-            'NOARTBOARD': '没有选择任何画板',
-            'EXPORTSUCCESS': '打包导出成功',
-            'NEWVERSION': '发现版本，从Toolbox中删除后重新安装可以获取新版本',
-            'LastVersion': '已经是最新版本了',
-            'NETERROR': '无法访问更新服务器，请稍后再试',
-            'SELECTEXPORTARTBOARD': '请选择要导出的画板',
-            'SELECTEDARTBOARD': '当前选中的画板',
-            'ARTBOARDONPAGE': '当前页面上的全部画板',
-            'ALLARTBOARD': '所有画板(会比较慢)',
-            'EXPORTEVERYLAYER': '把每个图层作为图片导出',
-            'CONFIRM': '确认',
-            'CANCEl': '取消'
-        },
-        'en': {
-            'EXPORT': 'Export',
-            'EXPORTTO': 'Export to',
-            'NOARTBOARD': 'No artboards found.',
-            'EXPORTSUCCESS': 'Export success.',
-            'NEWVERSION': 'Marketch has new version. Please reinstalling form sketch toolbox.',
-            'LastVersion': 'You use the latest version.',
-            'NETERROR': 'Service is not available.',
-            'SELECTEXPORTARTBOARD': 'Please selected Artboard.',
-            'SELECTEDARTBOARD': 'Selection Artboard',
-            'ARTBOARDONPAGE': 'Artboard on current page',
-            'ALLARTBOARD': 'All Artboard',
-            'EXPORTEVERYLAYER': 'Export all layers as image',
-            'CONFIRM': 'Confirm',
-            'CANCEl': 'Cancel'
-        }
-    }
-
-    my.join = join;
-    my.map = map;
-    my.values = values;
-    my.in_array = in_array;
-    my.each = each;
-    my.extend = extend;
-    my.wrap_script = wrap_script;
-    my.render_variables = render_variables;
-    my.script_to_string =script_to_string;
-    my.getJSON = getJSON;
-    my.I18N = (function(){
+    I18N: (function(){
         var defs = [NSUserDefaults standardUserDefaults];
         var languages = [[defs objectForKey:@"AppleLanguages"] objectAtIndex:0];
+        //多语言配置
+        var I18N = {
+            'zh-cn': {
+                'language': 'cn',
+                'EXPORT': '导出',
+                'EXPORTTO': '导出到：',
+                'NOARTBOARD': '没有选择任何画板',
+                'EXPORTSUCCESS': '打包导出成功',
+                'EXPORTFAIL': '打包导出失败',
+                'NEWVERSION': '发现版本，从Toolbox中删除后重新安装可以获取新版本',
+                'LAETVERSION': '已经是最新版本了',
+                'NETERROR': '无法访问更新服务器，请稍后再试',
+                'SELECTEXPORTARTBOARD': '请选择要导出的画板',
+                'SELECTEDARTBOARD': '当前选中的画板',
+                'ARTBOARDONPAGE': '当前页面上的全部画板',
+                'ALLARTBOARD': '所有画板(会比较慢)',
+                'EXPORTEVERYLAYER': '把每个图层作为图片导出',
+                'CONFIRM': '确认',
+                'CANCEl': '取消',
+                //预览页面多语言
+                'MarketchPreview': {
+                    'UNIT': '单位',
+                    'SIZE': '尺寸',
+                    'SHOWSLICE': '显示切片',
+                    'DRAGTOSAVE': '右键或拖拽到桌面保存',
+                    'WIDTH': '宽',
+                    'HEIGHT': '高',
+                    'BORDER': '边框',
+                    'COLOR': '颜色',
+                    'FILLCOLOR': '填充色',
+                    'RADIUS': '圆角',
+                    'LAYERTEXT': '图层内容',
+                    'CODE': '代码',
+                    'EXPORT': '导出',
+                    'FORMAT': '格式',
+                    'EXPORTLAYER': '导出选中图层',
+                    'COPYSUCCESS': '复制成功'
+                }
+            },
+            'en': {
+                'language': 'en',
+                'EXPORT': 'Export',
+                'EXPORTTO': 'Export to',
+                'NOARTBOARD': 'No artboards found.',
+                'EXPORTSUCCESS': 'Export success.',
+                'EXPORTFAIL': 'Export fail.',
+                'NEWVERSION': 'Marketch has new version. Please reinstalling form sketch toolbox.',
+                'LAETVERSION': 'is currently the newest version available.',
+                'NETERROR': 'Service is not available.',
+                'SELECTEXPORTARTBOARD': 'Please selected Artboard.',
+                'SELECTEDARTBOARD': 'Selection Artboard',
+                'ARTBOARDONPAGE': 'Artboard on current page',
+                'ALLARTBOARD': 'All Artboard',
+                'EXPORTEVERYLAYER': 'Export all layers as image',
+                'CONFIRM': 'Confirm',
+                'CANCEl': 'Cancel',
+                //预览页面多语言
+                'MarketchPreview': {
+                    'UNIT': 'Unit',
+                    'SIZE': 'Size',
+                    'SHOWSLICE': 'Show slice',
+                    'DRAGTOSAVE': 'Drag to desktop for save.',
+                    'WIDTH': 'Width',
+                    'HEIGHT': 'Height',
+                    'BORDER': 'Border',
+                    'COLOR': 'color',
+                    'FILLCOLOR': 'Fill',
+                    'RADIUS': 'Radius',
+                    'LAYERTEXT': 'Content',
+                    'CODE': 'Code',
+                    'EXPORT': 'Export',
+                    'FORMAT': 'Format',
+                    'EXPORTLAYER': 'Export Activity Layer',
+                    'COPYSUCCESS': 'Copy Success'
+                }
+            }
+        }
 
         //获取到语言后重新设置I18N变量，以简化操作
         if(languages != 'zh-Hans'){
@@ -655,7 +219,199 @@ var Util = Util || (function() {
         }else{
             return I18N['zh-cn'];
         }
-    })();
+    })(),
 
-    return my;
-}());
+    /**
+     * 查看OC对象成员
+     * @param layer {object} 图层对象
+     * @param type {string} 查看类型。可选值：
+     *      class: 查看图层继承链
+     *      method: 查看图层类方法&&实例方法
+     *      property: 查看图层属性
+     *      protoco: 查看图层协议;
+     * @return Array
+     */
+    getMembersOfOC: function(layer, type){
+        var result = NSMutableArray.array();
+        console.log('layer class: '+ [layer class]);
+        var desc = [[MOClassDescription alloc] initWithClass:[layer class] registered:nil];
+
+        switch(type){
+            default:
+            case 'class':
+                //继承链
+                result.addObjectsFromArray(desc.ancestors());
+                break;
+            case 'method':
+                //类方法（classMethodsWithAncestors）
+                result.addObjectsFromArray(desc.classMethodsWithAncestors());
+                //实例方法（instanceMethodsWithAncestors）
+                result.addObjectsFromArray(desc.instanceMethods());
+                break;
+            case 'property':
+                //属性（propertiesWithAncestors）
+                result.addObjectsFromArray(desc.properties());
+                break;
+            case 'protoco':
+                //协议（protocolsWithAncestors）
+                result.addObjectsFromArray(desc.protocols());
+                break;
+        }
+        return result;
+    },
+
+    //NSString to js string
+    toJSString: function(NSStr){
+        return new String(NSStr).toString();
+    },
+
+    //打包文件
+    zipFile: function(zipFile, destination){
+        var zipTask = [[NSTask alloc] init];
+
+        [zipTask setLaunchPath:@'/usr/bin/ditto'];
+        //zip参数
+        [zipTask setArguments:[NSArray arrayWithObjects: @"-c", @"-k", @"-X", @"--rsrc", zipFile, destination, nil]];
+
+        [zipTask launch];
+        [zipTask waitUntilExit];
+
+        if ([zipTask terminationStatus] != 0){
+            //task执行失败
+            return false;
+        }else{
+            //task执行成功
+            return true;
+        }
+    },
+
+    /**
+     * 获取图层数据
+     * @param layer 目标图层
+     * @param config.type 图层类型
+     * @param config.zIndex 
+     * @return object
+     */
+    getLayerData: function(layer, config){
+        //图层在画板中的位置、尺寸：frameInArtboard
+        var layerFrame = layer.frameInArtboard();
+        //图层基本信息
+        var layerData = {
+            'id': util.toJSString(layer.objectID()),
+            //图层路径默认与图层id一致
+            src: util.toJSString(layer.objectID()),
+            name: util.toJSString(layer.name()),
+            x: Math.ceil(layerFrame.origin.x),
+            y: Math.ceil(layerFrame.origin.y),
+            zIndex: config.zIndex,
+            width: Math.ceil(layerFrame.size.width),
+            height: Math.ceil(layerFrame.size.height)
+        };
+
+        //修正边框对图形、位图的位置影响
+        if(config.type == 'shape' || config.type == 'bitmap'){
+            var border = layer.style().borders().firstObject();
+            var borderWidth = null;
+
+            if(border && border.isEnabled()){
+                borderWidth = border.thickness();
+
+                //边框位置为center
+                if(border.position() == 0){
+                    //补偿坐标
+                    layerData.x = layerData.x - parseInt(borderWidth/2, 10);
+                    layerData.y = layerData.y - parseInt(borderWidth/2, 10);
+                    //补偿尺寸
+                    layerData.width = layerData.width + borderWidth;
+                    layerData.height = layerData.height + borderWidth;
+                }
+                //边框位置为outside
+                if(border.position() == 2){
+                    //补偿坐标
+                    layerData.x = layerData.x - borderWidth;
+                    layerData.y = layerData.y - borderWidth;
+                    //补偿尺寸
+                    layerData.width = layerData.width + (borderWidth * 2);
+                    layerData.height = layerData.height + (borderWidth * 2);
+                }
+            }
+        }
+
+        //对于画板、slice、位图只需要返回基本数据
+        if(config.type == 'artboard' || config.type == 'slice' || config.type == 'bitmap'){
+            return layerData;
+        }
+
+        //文字图层
+        if(config.type == 'text'){
+            var layerFont = layer.font();
+            var textAlign = util.getTextAlign(layer);
+            var fontWeight = util.getFontWeight(layerFont);
+            var fontStyle = layer.style();
+
+            //文字内容
+            layerData.html = util.toJSString(layer.stringValue());
+            layerData.style = util.filterSketchCss(layer.CSSAttributes());
+
+            //修正文字图层设置填充后颜色不正确的问题
+            if(fontStyle.hasEnabledFill()){
+                var fillColor = layer.style().fill().CSSAttributeString().split(':');
+                if(fillColor.length > 1){
+                    layerData.style.color = util.trim(fillColor[1]);
+                }
+            }
+
+            if(textAlign){
+                layerData.style['text-align'] = textAlign;
+            }
+            if(fontWeight){
+                layerData.style['font-weight'] = fontWeight;
+            }
+
+            return layerData;
+        }
+
+        //图形
+        if(config.type == 'shape'){
+            var shapeClassName = layer.layers().firstObject().className();
+            layerData.style = util.filterSketchCss(layer.CSSAttributes());
+
+            layerData.style.width = layerData.width +'px';
+            layerData.style.height = layerData.height +'px';
+
+            //从css中复制一份圆角（给设计师看）
+            if(layerData.style['border-radius']){
+                layerData.radius = layerData.style['border-radius'].replace(/[^\d]/gi, '');
+            }
+
+            //从css中复制一份圆角（给设计师看）
+            if(layerData.style['background']){
+                layerData.background = layerData.style['background'];
+            }
+            
+            //正圆形（长宽误差2px以内）补充borderRadius属性
+            if(shapeClassName == 'MSOvalShape' && Math.abs(layerData.width - layerData.height) <= 2){
+                layerData.style['border-radius'] = '100%';
+            }
+
+            return layerData;
+        }
+    },
+
+    trim: function(str){
+        return str.replace(/(^\s+|\s+$)/g, '');
+    },
+
+    //处理系统生成的css，返回js object
+    filterSketchCss: function(cssAttrs){
+        var style = {};
+        for(var i=0,len=cssAttrs.count();i<len;i++){
+            var cssAttr = util.toJSString(cssAttrs.objectAtIndex(i));
+            if(!cssAttr.match(/^\/\*.*?\*\/$/g)){
+                cssAttr = cssAttr.split(':');
+                style[util.trim(cssAttr[0])] = util.trim(cssAttr[1].replace(';', ''))
+            }
+        }
+        return style;
+    }
+}

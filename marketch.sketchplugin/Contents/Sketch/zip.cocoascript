@@ -1,0 +1,120 @@
+@import "export.cocoascript";
+
+//作为zip包导出
+var ExportAsZip = function(){};
+ExportAsZip.prototype = {
+    setup: function(){
+        //导出选项
+        var expConfig = this.getExportConfig();
+        //保存路径
+        var exportPath = null;
+        //画板类型
+        var artboardType = null;
+        //marketch
+        var marketch = null;
+        //打包结果
+        var zipResult = null;
+
+        //点了确定按钮
+        if(expConfig.button == 1000){
+            switch (expConfig.artboard){
+                default:
+                case 0:
+                    artboardType = 'selected';
+                    break;
+                case 1:
+                    artboardType = 'page';
+                    break;
+                case 2:
+                    artboardType = 'all';
+                    break;
+            }
+
+            //获取保存路径
+            exportPath = this.getSavePath();
+
+            if(exportPath){
+                marketch = new Marketch().run({
+                    layer: expConfig.layer,
+                    artboard: artboardType,
+                    saveSource: true
+                });
+
+                zipResult = util.zipFile(marketch.tmpPath.basePath, exportPath);
+
+                if(zipResult){
+                    //task执行成功
+                    doc.showMessage(I18N.EXPORTSUCCESS);
+                }else{
+                    doc.showMessage(I18N.EXPORTFAIL);
+                }
+            }
+        }
+    },
+
+    //获取导出选项
+    getExportConfig: function(){
+        var altWin = COSAlertWindow.new();
+        var items = [I18N.SELECTEDARTBOARD, I18N.ARTBOARDONPAGE, I18N.ALLARTBOARD];
+        var comboBox = NSComboBox.alloc().initWithFrame(NSMakeRect(0,0,200,25));
+        var checkBox = NSButton.alloc().initWithFrame(NSMakeRect(0,0,250,25));
+
+        altWin.setMessageText('Marketch');
+        altWin.setInformativeText(I18N.SELECTEXPORTARTBOARD);
+        altWin.addButtonWithTitle(I18N.CONFIRM);
+        altWin.addButtonWithTitle(I18N.CANCEl);
+
+        comboBox.addItemsWithObjectValues(items);
+        comboBox.selectItemAtIndex(2);
+        
+        checkBox.setTitle(I18N.EXPORTEVERYLAYER);
+        checkBox.setButtonType(NSSwitchButton);
+        checkBox.setState(true);
+        
+        altWin.addAccessoryView(comboBox);
+        altWin.addAccessoryView(checkBox);
+
+        return {
+            //用户点击按钮 确认返回1000，取消返回1001
+            button: altWin.runModal(),
+            //需要导出的画板返回值为索引
+            artboard: comboBox.indexOfSelectedItem(),
+            //是否导出每个图层的图片
+            layer: checkBox.state()
+        }
+    },
+
+    //获取zip包保存路径
+    getSavePath: function(){
+        var savePanel = NSSavePanel.savePanel();
+        var docName = doc.displayName();
+
+        savePanel.setTitle(I18N.EXPORT);
+        savePanel.setNameFieldLabel(I18N.EXPORTTO);
+        savePanel.setShowsTagField(false);
+        savePanel.setAllowedFileTypes(NSArray.arrayWithObject(@"zip"));
+        savePanel.setAllowsOtherFileTypes(false);
+        savePanel.setCanCreateDirectories(true);
+
+        if(![doc fileURL]){
+            docName = 'Untitled';
+        }else{
+            docName = docName.replace('.sketch', '')
+        }
+
+        //设置默认导出zip包的文件名为sketch源文件名
+        savePanel.nameFieldStringValue = [NSString stringWithFormat:@"%@.zip", docName];
+
+        if (savePanel.runModal() != NSOKButton){
+            return false;
+        }else{
+            return savePanel.URL().path();
+        }
+    }
+}
+
+function onRun(context){
+    ctx = context;
+    doc = context.document;
+    new ExportAsZip().setup();
+}
