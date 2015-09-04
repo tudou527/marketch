@@ -463,13 +463,8 @@ Marketch.prototype = {
 
         $("#unit").on('click', function() {
             var dropdown = $(this).siblings(".dropdown");
-            if (dropdown.hasClass("active")) {
-                $(this).removeClass("active");
-                dropdown.removeClass("active");
-                return;
-            }
-            $(this).addClass("active");
-            dropdown.addClass("active");
+            $(this).toggleClass("active");
+            dropdown.toggleClass("active");
         });
 
         $('#sk-slice').on('click', function(e){
@@ -492,6 +487,7 @@ Marketch.prototype = {
             self.unit = unitMap[unit];
             if (self.cache.selected) {
                 self.selectedLayer();
+                self.showPanel();
             }
 
         }).children().first().click();
