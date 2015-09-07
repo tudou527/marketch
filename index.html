@@ -61,12 +61,12 @@ input[type=text], textarea {outline:0;padding:3px;}
             .dropdown li:nth-child(odd) {background:#fff;}
             .dropdown li:nth-child(even) {background:#f2f3f7;}
             .dropdown li:hover {background:#E1E8EF;}
-        .brand {z-index:13;font-family:"AndaleMono";line-height:30px;font-size:18px;font-weight:bold;display:inline-block;background:#3882BD;width:120px;text-align:center;}
+        .brand {z-index:13;font-family:"AndaleMono";line-height:30px;font-size:18px;font-weight:bold;display:inline-block;background:#3882BD;width:150px;text-align:center;}
             .brand a {color:#fff;}
         .header ul {margin:0;font-size:12px;float:right;}
             .header ul a {display:inline-block;font-size:12px;vertical-align:middle;}
     .page-wrap {position:absolute;top:30px;bottom:0;width:100%;height:auto;}
-    .artboard {position:absolute;top:0;left:120px;right:0;bottom:0;z-index:0;overflow:auto;}
+    .artboard {position:absolute;top:0;left:150px;right:0;bottom:0;z-index:0;overflow:auto;}
     .wrap {position:relative;margin:15px 0 0 15px;}
         .wrap:after {content:'';display:block;clear:both;height:0;overflow:hidden;}
             .wrap-layer {display:none;background-size:100% 100% !important;}
@@ -154,7 +154,7 @@ input[type=text], textarea {outline:0;padding:3px;}
             .export-btn {text-align:center;}
                 .panel-export, .panel-export:hover {display:inline-block;padding:0 15px;height:24px;line-height:24px;border-radius:3px;color:#b3b8bd;box-shadow:0 0 3px rgba(0,0,0,.4);background:#434950;}
 
-    .aside {position:absolute;top:0;left:0;width:120px;bottom:0;overflow:hidden;overflow-y:auto;color:#fff;background:#343D50;}
+    .aside {position:absolute;top:0;left:0;width:150px;bottom:0;overflow:hidden;overflow-y:auto;color:#fff;background:#343D50;}
         .aside h2 {position:relative;}
             .aside h2 span {display:block;margin-right:20px;height:33px;font-weight:700;color:#B9C0C4;overflow:hidden;}
             .aside h2:after {border-color:#9CA3A7;}
@@ -463,13 +463,8 @@ Marketch.prototype = {
 
         $("#unit").on('click', function() {
             var dropdown = $(this).siblings(".dropdown");
-            if (dropdown.hasClass("active")) {
-                $(this).removeClass("active");
-                dropdown.removeClass("active");
-                return;
-            }
-            $(this).addClass("active");
-            dropdown.addClass("active");
+            $(this).toggleClass("active");
+            dropdown.toggleClass("active");
         });
 
         $('#sk-slice').on('click', function(e){
@@ -492,6 +487,7 @@ Marketch.prototype = {
             self.unit = unitMap[unit];
             if (self.cache.selected) {
                 self.selectedLayer();
+                self.showPanel();
             }
 
         }).children().first().click();
