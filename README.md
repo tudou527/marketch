@@ -2,8 +2,7 @@
 
 Marketch is a Sketch 3 plug-in for automatically generating html page that can measure and get CSS styles on it.
 
-
-## changelog
+## Change Log
 
 #### `v1.0.0`
 * [add] supports export slice.
@@ -27,7 +26,6 @@ Notice
 * Select pages and artboards in the upper left corner
 * Select an element to view its location and CSS styles on the right side of the page.
 * Select an element and hover another to see the spacing between them. 
-* 
 
 ## Thanks
 * [MForever78](https://github.com/MForever78)
