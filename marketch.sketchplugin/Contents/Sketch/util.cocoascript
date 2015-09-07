@@ -233,7 +233,6 @@ var util = {
      */
     getMembersOfOC: function(layer, type){
         var result = NSMutableArray.array();
-        console.log('layer class: '+ [layer class]);
         var desc = [[MOClassDescription alloc] initWithClass:[layer class] registered:nil];
 
         switch(type){
@@ -245,8 +244,8 @@ var util = {
             case 'method':
                 //类方法（classMethodsWithAncestors）
                 result.addObjectsFromArray(desc.classMethodsWithAncestors());
-                //实例方法（instanceMethodsWithAncestors）
-                result.addObjectsFromArray(desc.instanceMethods());
+                //实例方法（instanceMethods）
+                result.addObjectsFromArray(desc.instanceMethodsWithAncestors());
                 break;
             case 'property':
                 //属性（propertiesWithAncestors）
