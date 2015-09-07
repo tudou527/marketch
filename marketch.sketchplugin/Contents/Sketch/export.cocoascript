@@ -324,7 +324,9 @@ Marketch.prototype = {
                 //保存图层数据
                 layerData = util.getLayerData(theLayer.parentGroup(), {type: 'bitmap', zIndex: this.artboardZIndex});
                 artboardData.layer.push(layerData);
-                //导出切片
+
+                //导出父图层
+                exportConfig.name = util.toJSString(theLayer.parentGroup().objectID());
                 exportLayerAsImage && this.exportLayerAsImage(theLayer.parentGroup(), exportConfig);
             }else{
                 switch(layerType){
@@ -407,12 +409,16 @@ Marketch.prototype = {
 
         //图形类名包括shape，但是不包括group关键字时表示这是一个基本图形，应该导出的是父图层
         if(layerClass.indexOf('shape') > -1 && layerClass.indexOf('group') == -1){
-            return false;
+            //假装不可见，以便忽略
+            isVisible = false;
+            //return false;
         }
 
         //图层为文件夹或者画板时不用导出
         if(layerClass == 'mslayergroup' || layerClass == 'msartboardgroup'){
-            return false;
+            //假装不可见，以便忽略
+            isVisible = false;
+            //return false;
         }
 
         //向上遍历
@@ -466,6 +472,7 @@ Marketch.prototype = {
             [[MSSliceExporter dataForRequest: slice] writeToFile:exportConfig.name atomically:true];
         }else{
             //导出2x的图
+            slice.scale = 2;
             [[MSSliceExporter dataForRequest: slice] writeToFile:exportConfig.name atomically:true];
             //导出1x的图
             slice.scale = 1;

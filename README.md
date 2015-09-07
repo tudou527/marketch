@@ -30,5 +30,6 @@ Notice
 * 
 
 ## Thanks
+* [MForever78](https://github.com/MForever78)
 * [noyobo](https://github.com/noyobo)
 * 许诺
