@@ -380,10 +380,10 @@ var util = {
 
             //从css中复制一份圆角（给设计师看）
             if(layerData.style['border-radius']){
-                layerData.radius = layerData.style['border-radius'].replace(/[^\d]/gi, '');
+                layerData.radius = layerData.style['border-radius'].replace(/[^\d\.]/gi, '');
             }
 
-            //从css中复制一份圆角（给设计师看）
+            //从css中复制一份背景色（给设计师看）
             if(layerData.style['background']){
                 layerData.background = layerData.style['background'];
             }
