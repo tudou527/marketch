@@ -6,5 +6,5 @@ To help you and us target the bug efficiently, we urge you to provide these esse
 
 - Sketch version: 3.3.2(12043)
 - Description: The value should be... but I see...
-- Screenshot: ![screenshot](resource/1.png)
+- Screenshot: ![screenshot](resource/1.jpg)
 
