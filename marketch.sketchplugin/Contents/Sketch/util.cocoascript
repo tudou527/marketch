@@ -261,7 +261,7 @@ var util = {
 
     //NSString to js string
     toJSString: function(NSStr){
-        return new String(encodeURI(NSStr)).toString();
+        return new String(encodeURI(trim(NSStr))).toString();
     },
 
     //打包文件
