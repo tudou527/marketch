@@ -244,7 +244,7 @@ var util = {
             case 'method':
                 //类方法（classMethodsWithAncestors）
                 result.addObjectsFromArray(desc.classMethodsWithAncestors());
-                //实例方法（instanceMethods）
+                //实例方法（instanceMethodsWithAncestors）
                 result.addObjectsFromArray(desc.instanceMethodsWithAncestors());
                 break;
             case 'property':
@@ -259,9 +259,19 @@ var util = {
         return result;
     },
 
-    //NSString to js string
+    /*
+     * NSString to js string
+     * @param {NSString} NSStr 待转换的字符串
+     * @param {boolean} config.encode 是否编码字符串
+     */
     toJSString: function(NSStr){
-        return new String(encodeURI(NSStr)).toString();
+        var config = arguments.length > 1 ? arguments[1] : null;
+        var str = new String(NSStr).toString();
+
+        if(config && config.encode){
+            return encodeURIComponent(str);
+        }
+        return str;
     },
 
     //打包文件
@@ -294,12 +304,13 @@ var util = {
     getLayerData: function(layer, config){
         //图层在画板中的位置、尺寸：frameInArtboard
         var layerFrame = layer.frameInArtboard();
+        var layerId = util.toJSString(layer.objectID()); 
         //图层基本信息
         var layerData = {
-            'id': util.toJSString(layer.objectID()),
+            'id': layerId,
             //图层路径默认与图层id一致
-            src: util.toJSString(layer.objectID()),
-            name: util.toJSString(layer.name()),
+            src: layerId,
+            name: util.toJSString(layer.name(), {encode: true}),
             x: Math.ceil(layerFrame.origin.x),
             y: Math.ceil(layerFrame.origin.y),
             zIndex: config.zIndex,
@@ -349,7 +360,7 @@ var util = {
             var fontStyle = layer.style();
 
             //文字内容
-            layerData.html = util.toJSString(layer.stringValue());
+            layerData.html = util.toJSString(layer.stringValue(), {encode: true});
             layerData.style = util.filterSketchCss(layer.CSSAttributes());
 
             //修正文字图层设置填充后颜色不正确的问题
@@ -380,7 +391,12 @@ var util = {
 
             //从css中复制一份圆角（给设计师看）
             if(layerData.style['border-radius']){
-                layerData.radius = layerData.style['border-radius'].replace(/[^\d\.]/gi, '');
+                layerData.radius = layerData.style['border-radius'];
+                if(layerData.radius.split('px').length > 2){
+                    layerData.radius = layerData.radius.replace(/px\s?/gi, '/');
+                }else{
+                    layerData.radius = layerData.radius.replace('px', '');
+                }
             }
 
             //从css中复制一份背景色（给设计师看）

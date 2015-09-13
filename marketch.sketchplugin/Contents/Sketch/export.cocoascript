@@ -215,7 +215,7 @@ Marketch.prototype = {
                     //页面唯一id
                     pageId: theArtPageId,
                     //页面名
-                    name: util.toJSString(theArtPage.name()),
+                    name: util.toJSString(theArtPage.name(), {encode: true}),
                     //页面下画板id列表（保证显示的顺序）
                     artboardId: []
                 }
@@ -268,6 +268,7 @@ Marketch.prototype = {
             //导出路径
             path: obj.artboardPath
         }
+
         //画板下的切片
         artboardData.slice = [];
         //画板下的图层
@@ -384,7 +385,7 @@ Marketch.prototype = {
         var textLayers = parentLayer.children().filteredArrayUsingPredicate(predicate);
 
         //图层尺寸小于64*64 并且不包含文字图层
-        if(frame.width < 64 && frame.height < 64 && textLayers.count() == 0){
+        if(frame.width <= 64 && frame.height <= 64 && textLayers.count() == 0){
             return true;
         }
 
