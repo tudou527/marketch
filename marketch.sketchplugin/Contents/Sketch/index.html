@@ -559,7 +559,7 @@ Marketch.prototype = {
                         'left:', (sliceLayer.x - baseX) ,'px;',
                         'width: ', sliceLayer.width, 'px;',
                         'height: ', sliceLayer.height, 'px;',
-                    	'" name="', self.decode(sliceLayer.name) ,'">',
+                        '" name="', self.decode(sliceLayer.name) ,'">',
                         //layer.html,
                     '</div>'
                 );
@@ -594,7 +594,7 @@ Marketch.prototype = {
             var maskLayers = [];
             //起始zindex值
             var startZindex = parseInt($('#'+ maskId).css('zIndex'), 10);
-			//filer not exist layer(TODO: fixed the bug in export.cocoascript)
+            //filer not exist layer(TODO: fixed the bug in export.cocoascript)
             $.each([maskId].concat(childItem), function(index, layerId){
                 if($('#'+ layerId).size() > 0){
                     maskLayers.push(layerId);
@@ -826,7 +826,7 @@ Marketch.prototype = {
                 '<dl class="pa-block">',
                     '<dt><span>', this.I18N['LAYERTEXT'] ,'</span><em>', this.I18N['COPYSUCCESS'] ,'</em></dt>',
                     '<dd>',
-                        '<textarea name="content">', layerData.html ,'</textarea>',
+                        '<textarea name="content">', this.decode(layerData.html) ,'</textarea>',
                     '</dd>',
                 '</dl>'
             )
@@ -869,8 +869,13 @@ Marketch.prototype = {
         //重新设置textarea高度
         $('#panel').find('textarea').each(function(){
             var height = this.scrollHeight;
+            var width = this.scrollWidth;
 
-            if(height > 25 && height < 120){
+            if(height <= 25){
+                if(width > 175){
+                    $(this).css({height: 23});
+                }
+            }else if(height > 25 && height < 120){
                 $(this).css({height: height});
             }else if(height > 120){
                 $(this).css({height: 120});
@@ -882,17 +887,11 @@ Marketch.prototype = {
     //格式化css json数据
     formatStyle: function(styleJson){
         var style = [];
-        var a= {};
-
-        if({}.toString.call(styleJson) == '[object Array]'){
-            return styleJson.join('\r\n');
-        }else{
-            for(var k in styleJson){
-                style.push(k , ':', (styleJson[k].indexOf(' ') > -1 ? '"'+styleJson[k]+'"' : styleJson[k]), ';\r\n')
-            }
-
-            return style.join('').replace(/"/gi, '');
+        for(var k in styleJson){
+            style.push(k +':'+ (styleJson[k].indexOf(' ') > -1 ? '"'+styleJson[k]+'"' : styleJson[k]) +';');
         }
+
+        return style.join('\r\n');
     },
 
     //显示标尺，标尺总是由target指向selected

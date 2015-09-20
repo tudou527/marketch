@@ -94,10 +94,18 @@ var console = (function(){
 
 var util = {
     //获取文字图层字体样式
-    getFontWeight: function(font){
-        var fontManager = [NSFontManager sharedFontManager];
-        var weight = fontManager.weightOfFont(font);
-        return weight > 7 ? '700': null;
+    getFontWeight: function(layer){
+        var app = NSApplication.sharedApplication();
+        var appVersion = parseFloat(app.applicationVersion(), 10);
+        
+        if(appVersion <= 3.3){
+            var layerFont = layer.font();
+            var fontManager = [NSFontManager sharedFontManager];
+            var weight = fontManager.weightOfFont(layerFont);
+            return weight > 7 ? '700': null;
+        }else{
+            return null
+        }
     },
 
     //字体对齐方式
@@ -354,9 +362,8 @@ var util = {
 
         //文字图层
         if(config.type == 'text'){
-            var layerFont = layer.font();
             var textAlign = util.getTextAlign(layer);
-            var fontWeight = util.getFontWeight(layerFont);
+            var fontWeight = util.getFontWeight(layer);
             var fontStyle = layer.style();
 
             //文字内容
@@ -377,7 +384,6 @@ var util = {
             if(fontWeight){
                 layerData.style['font-weight'] = fontWeight;
             }
-
             return layerData;
         }
 
@@ -408,7 +414,6 @@ var util = {
             if(shapeClassName == 'MSOvalShape' && Math.abs(layerData.width - layerData.height) <= 2){
                 layerData.style['border-radius'] = '100%';
             }
-
             return layerData;
         }
     },
