@@ -158,22 +158,23 @@ Marketch.prototype = {
     //复制当前sketch文件
     copySkethFile: function(){
         var basePath = this.tmpPath.basePath;
-        var sketchName = doc.displayName() +'';
+        var sketchName = util.toJSString(doc.displayName());
         //sketch源文件在临时目录中的保存路径
         var savePath = '';
         //sketch源文件所在路径
-        var sketchFilePath = [doc fileURL];
+        var sketchFilePath = doc.fileURL();
 
+        
         if(!(/\.sketch$/.test(sketchName))){
             sketchName += '.sketch';
         }
 
-        savePath = [basePath stringByAppendingPathComponent: sketchName];
-
+        savePath = basePath +'/'+ sketchName;
+            
+        //如果sketch文件没有保存sketchFilePath会返回null就不需要复制sketch源文件了
         if(sketchFilePath){
             this.sketchData.sketchName = sketchName;
-            //如果sketch文件没有保存sketchFilePath会返回null就不需要复制sketch源文件了
-            sketchFilePath = [sketchFilePath path];
+            sketchFilePath = sketchFilePath.path();
             [[NSFileManager defaultManager] copyPath:sketchFilePath toPath:savePath handler:nil];
         }
     }, 
@@ -215,7 +216,7 @@ Marketch.prototype = {
                     //页面唯一id
                     pageId: theArtPageId,
                     //页面名
-                    name: util.toJSString(theArtPage.name()),
+                    name: util.toJSString(theArtPage.name(), {encode: true}),
                     //页面下画板id列表（保证显示的顺序）
                     artboardId: []
                 }
@@ -256,7 +257,6 @@ Marketch.prototype = {
     getArtboardData: function(obj){
         var artboard = obj.artboard;
         var exportLayerAsImage = this.sketchData.exportEveryLayer;
-        var artboardFrame = artboard.absoluteRect();
         var theLayer = null;
         //画板下的图层迭代器
         var loopLayer = artboard.children().objectEnumerator();
@@ -269,6 +269,7 @@ Marketch.prototype = {
             //导出路径
             path: obj.artboardPath
         }
+
         //画板下的切片
         artboardData.slice = [];
         //画板下的图层
@@ -385,7 +386,7 @@ Marketch.prototype = {
         var textLayers = parentLayer.children().filteredArrayUsingPredicate(predicate);
 
         //图层尺寸小于64*64 并且不包含文字图层
-        if(frame.width < 64 && frame.height < 64 && textLayers.count() == 0){
+        if(frame.width <= 64 && frame.height <= 64 && textLayers.count() == 0){
             return true;
         }
 
@@ -456,18 +457,26 @@ Marketch.prototype = {
      */
     exportLayerAsImage: function(layer, options){
         var slice;
+        var sliceRect = null;
+        /**
+         * absoluteInfluenceRect 虽然返回值数据类型为CGRect
+         * 但是某些情况下得到的坐标尺寸与实际有1px的误差
+         */
+        var absoluteRect = layer.absoluteRect();
         //导出配置
         var exportConfig = {
             name: options.path +'/'+ options.name +'@2x.png',
             format: 'png'
         };
-        var rect = layer.absoluteInfluenceRect();
 
-        slice = [[MSSliceMaker slicesFromExportableLayer: layer inRect: rect] firstObject];
+        sliceRect = NSMakeRect(absoluteRect.x(), absoluteRect.y(), absoluteRect.width(), absoluteRect.height());
+        slice = [[MSSliceMaker slicesFromExportableLayer:layer inRect:sliceRect] firstObject];
         slice.page = doc.currentPage().copyLightweight();
         slice.format = exportConfig.format;
 
         if(options.name == 'artboard'){
+            //画板按1x导出
+            slice.scale = 1;
             exportConfig.name = options.path +'/'+ options.name +'.png',
             [[MSSliceExporter dataForRequest: slice] writeToFile:exportConfig.name atomically:true];
         }else{

@@ -4,6 +4,9 @@ Marketch is a Sketch 3 plug-in for automatically generating html page that can m
 
 ## Change Log
 
+#### `v1.0.4`
+* [update] support for sketch beta 3.4
+
 #### `v1.0.0`
 * [add] supports export slice.
 * [add] css attribute support multiple radius.

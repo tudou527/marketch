@@ -134,7 +134,7 @@ input[type=text], textarea {outline:0;padding:3px;}
         
         /* 一行 */
         .pa-inline {overflow:hidden;}
-            .pa-inline dt {float:left;width:35px;padding-right:6px;}
+            .pa-inline dt {float:left;width:38px;padding-right:6px;}
             .pa-inline dd {overflow:hidden;}
                     
         /* 多行 */
@@ -361,6 +361,10 @@ Marketch.prototype = {
         $('#wrap').append(frageElement);
     },
 
+    decode: function(str){
+        return decodeURIComponent(str).replace(/^\s+|\s+$/g, '');
+    },
+
     //页面切换 old: buildSwitch
     buildList: function(){
         var self = this;
@@ -417,7 +421,7 @@ Marketch.prototype = {
             var data = self.sketchData.pageData[pageId];
 
             pageListHtml.push(
-                '<li data-page="'+ data.pageId +'"><h2 class="more" title="' + data.name + '"><span>'+ data.name + '</span></h2>'
+                '<li data-page="'+ data.pageId +'"><h2 class="more" title="' + self.decode(data.name) + '"><span>'+ self.decode(data.name) + '</span></h2>'
             );
 
             if(index == 0){
@@ -429,7 +433,7 @@ Marketch.prototype = {
             $.each(data.artboardId, function(n, artboardId){
                 var artboradData = self.sketchData.artboard[artboardId];
                 pageListHtml.push(
-                    '<li data-ab="'+ artboradData.id +'"><h3 title="' + artboradData.name + '">'+ artboradData.name +'</h3></li>'
+                    '<li data-ab="'+ artboradData.id +'"><h3 title="' + self.decode(artboradData.name) + '">'+ self.decode(artboradData.name) +'</h3></li>'
                 );
             });
 
@@ -534,7 +538,7 @@ Marketch.prototype = {
                         'left:', (layer.x - baseX) ,'px;',
                         'width: ', layer.width, 'px;',
                         'height: ', layer.height, 'px;',
-                    '" name="', layer.name ,'">',
+                    '" name="', self.decode(layer.name) ,'">',
                         //layer.html,
                     '</div>'
                 );
@@ -555,7 +559,7 @@ Marketch.prototype = {
                         'left:', (sliceLayer.x - baseX) ,'px;',
                         'width: ', sliceLayer.width, 'px;',
                         'height: ', sliceLayer.height, 'px;',
-                    '" name="', sliceLayer.name ,'">',
+                        '" name="', self.decode(sliceLayer.name) ,'">',
                         //layer.html,
                     '</div>'
                 );
@@ -587,18 +591,26 @@ Marketch.prototype = {
      */
     resetMask: function(obj){
         $.each(obj.maskData, function(maskId, childItem){
-            var maskLayers = [maskId].concat(childItem);
+            var maskLayers = [];
             //起始zindex值
-            var startZindex = $('#'+ maskId).css('zIndex');
+            var startZindex = parseInt($('#'+ maskId).css('zIndex'), 10);
+            //filer not exist layer(TODO: fixed the bug in export.cocoascript)
+            $.each([maskId].concat(childItem), function(index, layerId){
+                if($('#'+ layerId).size() > 0){
+                    maskLayers.push(layerId);
+                }
+            })
 
-            //按面积排序
+            //按面积倒序
             maskLayers.sort(function(a, b){
-                var widthA = $('#'+ a).width() || 0;
-                var heightA = $('#'+ a).height() || 0;
-                var widthB = $('#'+ b).width() || 0;
-                var heightB = $('#'+ b).height() || 0;
+                var elA = $('#'+ a);
+                var elB = $('#'+ b)
+                var widthA = elA.width() || 0;
+                var heightA = elA.height() || 0;
+                var widthB = elB.width() || 0;
+                var heightB = elB.height() || 0;
 
-                return (widthA * heightA) < (widthB * heightB);
+                return (widthB * heightB) - (widthA * heightA);
             });
 
             //重置图层zindex
@@ -761,7 +773,7 @@ Marketch.prototype = {
 
         html.push(
             '<dl class="pa-block">',
-                '<dt><span>', layerData.name ,'</span></dt>',
+                '<dt><span>', this.decode(layerData.name) ,'</span></dt>',
                 '<dd>',
                     '<ul>',
                         '<li><label>X</label>', this.getScale(layerData.x) ,'</li>',
@@ -803,7 +815,7 @@ Marketch.prototype = {
                 '<dl class="pa-inline">',
                     '<dt><span>', this.I18N['RADIUS'] ,'</span></dt>',
                     '<dd>',
-                        '<p>', this.getScale(layerData.radius) ,'</p>',
+                        '<p>', layerData.radius ,'</p>',
                     '</dd>',
                 '</dl>'
             )
@@ -814,7 +826,7 @@ Marketch.prototype = {
                 '<dl class="pa-block">',
                     '<dt><span>', this.I18N['LAYERTEXT'] ,'</span><em>', this.I18N['COPYSUCCESS'] ,'</em></dt>',
                     '<dd>',
-                        '<textarea name="content">', layerData.html ,'</textarea>',
+                        '<textarea name="content">', this.decode(layerData.html) ,'</textarea>',
                     '</dd>',
                 '</dl>'
             )
@@ -857,8 +869,13 @@ Marketch.prototype = {
         //重新设置textarea高度
         $('#panel').find('textarea').each(function(){
             var height = this.scrollHeight;
+            var width = this.scrollWidth;
 
-            if(height > 25 && height < 120){
+            if(height <= 25){
+                if(width > 175){
+                    $(this).css({height: 23});
+                }
+            }else if(height > 25 && height < 120){
                 $(this).css({height: height});
             }else if(height > 120){
                 $(this).css({height: 120});
@@ -870,17 +887,11 @@ Marketch.prototype = {
     //格式化css json数据
     formatStyle: function(styleJson){
         var style = [];
-        var a= {};
-
-        if({}.toString.call(styleJson) == '[object Array]'){
-            return styleJson.join('\r\n');
-        }else{
-            for(var k in styleJson){
-                style.push(k , ': ', (styleJson[k].indexOf(' ') > -1 ? '"'+styleJson[k]+'"' : styleJson[k]), ';\r\n')
-            }
-
-            return style.join('').replace(/"/gi, '');
+        for(var k in styleJson){
+            style.push(k +':'+ (styleJson[k].indexOf(' ') > -1 ? '"'+styleJson[k]+'"' : styleJson[k]) +';');
         }
+
+        return style.join('\r\n');
     },
 
     //显示标尺，标尺总是由target指向selected

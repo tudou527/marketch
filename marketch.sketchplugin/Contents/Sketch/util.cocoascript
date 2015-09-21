@@ -94,10 +94,18 @@ var console = (function(){
 
 var util = {
     //获取文字图层字体样式
-    getFontWeight: function(font){
-        var fontManager = [NSFontManager sharedFontManager];
-        var weight = fontManager.weightOfFont(font);
-        return weight > 7 ? '700': null;
+    getFontWeight: function(layer){
+        var app = NSApplication.sharedApplication();
+        var appVersion = parseFloat(app.applicationVersion(), 10);
+        
+        if(appVersion <= 3.3){
+            var layerFont = layer.font();
+            var fontManager = [NSFontManager sharedFontManager];
+            var weight = fontManager.weightOfFont(layerFont);
+            return weight > 7 ? '700': null;
+        }else{
+            return null
+        }
     },
 
     //字体对齐方式
@@ -184,10 +192,10 @@ var util = {
                 'NEWVERSION': 'Marketch has new version. Please reinstalling form sketch toolbox.',
                 'LAETVERSION': 'is currently the newest version available.',
                 'NETERROR': 'Service is not available.',
-                'SELECTEXPORTARTBOARD': 'Please selected Artboard.',
-                'SELECTEDARTBOARD': 'Selection Artboard',
-                'ARTBOARDONPAGE': 'Artboard on current page',
-                'ALLARTBOARD': 'All Artboard',
+                'SELECTEXPORTARTBOARD': 'Which artboards would you like to export?',
+                'SELECTEDARTBOARD': 'Selected artboard',
+                'ARTBOARDONPAGE': 'Artboards on current page',
+                'ALLARTBOARD': 'All Artboards',
                 'EXPORTEVERYLAYER': 'Export all layers as image',
                 'CONFIRM': 'Confirm',
                 'CANCEl': 'Cancel',
@@ -196,7 +204,7 @@ var util = {
                     'UNIT': 'Unit',
                     'SIZE': 'Size',
                     'SHOWSLICE': 'Show slice',
-                    'DRAGTOSAVE': 'Drag to desktop for save.',
+                    'DRAGTOSAVE': 'Drag to desktop to save.',
                     'WIDTH': 'Width',
                     'HEIGHT': 'Height',
                     'BORDER': 'Border',
@@ -233,7 +241,6 @@ var util = {
      */
     getMembersOfOC: function(layer, type){
         var result = NSMutableArray.array();
-        console.log('layer class: '+ [layer class]);
         var desc = [[MOClassDescription alloc] initWithClass:[layer class] registered:nil];
 
         switch(type){
@@ -246,7 +253,7 @@ var util = {
                 //类方法（classMethodsWithAncestors）
                 result.addObjectsFromArray(desc.classMethodsWithAncestors());
                 //实例方法（instanceMethodsWithAncestors）
-                result.addObjectsFromArray(desc.instanceMethods());
+                result.addObjectsFromArray(desc.instanceMethodsWithAncestors());
                 break;
             case 'property':
                 //属性（propertiesWithAncestors）
@@ -260,9 +267,19 @@ var util = {
         return result;
     },
 
-    //NSString to js string
+    /*
+     * NSString to js string
+     * @param {NSString} NSStr 待转换的字符串
+     * @param {boolean} config.encode 是否编码字符串
+     */
     toJSString: function(NSStr){
-        return new String(NSStr).toString();
+        var config = arguments.length > 1 ? arguments[1] : null;
+        var str = new String(NSStr).toString();
+
+        if(config && config.encode){
+            return encodeURIComponent(str);
+        }
+        return str;
     },
 
     //打包文件
@@ -295,12 +312,13 @@ var util = {
     getLayerData: function(layer, config){
         //图层在画板中的位置、尺寸：frameInArtboard
         var layerFrame = layer.frameInArtboard();
+        var layerId = util.toJSString(layer.objectID()); 
         //图层基本信息
         var layerData = {
-            'id': util.toJSString(layer.objectID()),
+            'id': layerId,
             //图层路径默认与图层id一致
-            src: util.toJSString(layer.objectID()),
-            name: util.toJSString(layer.name()),
+            src: layerId,
+            name: util.toJSString(layer.name(), {encode: true}),
             x: Math.ceil(layerFrame.origin.x),
             y: Math.ceil(layerFrame.origin.y),
             zIndex: config.zIndex,
@@ -344,13 +362,12 @@ var util = {
 
         //文字图层
         if(config.type == 'text'){
-            var layerFont = layer.font();
             var textAlign = util.getTextAlign(layer);
-            var fontWeight = util.getFontWeight(layerFont);
+            var fontWeight = util.getFontWeight(layer);
             var fontStyle = layer.style();
 
             //文字内容
-            layerData.html = util.toJSString(layer.stringValue());
+            layerData.html = util.toJSString(layer.stringValue(), {encode: true});
             layerData.style = util.filterSketchCss(layer.CSSAttributes());
 
             //修正文字图层设置填充后颜色不正确的问题
@@ -367,7 +384,6 @@ var util = {
             if(fontWeight){
                 layerData.style['font-weight'] = fontWeight;
             }
-
             return layerData;
         }
 
@@ -381,7 +397,12 @@ var util = {
 
             //从css中复制一份圆角（给设计师看）
             if(layerData.style['border-radius']){
-                layerData.radius = layerData.style['border-radius'].replace(/[^\d\.]/gi, '');
+                layerData.radius = layerData.style['border-radius'];
+                if(layerData.radius.split('px').length > 2){
+                    layerData.radius = layerData.radius.replace(/px\s?/gi, '/');
+                }else{
+                    layerData.radius = layerData.radius.replace('px', '');
+                }
             }
 
             //从css中复制一份背景色（给设计师看）
@@ -393,7 +414,6 @@ var util = {
             if(shapeClassName == 'MSOvalShape' && Math.abs(layerData.width - layerData.height) <= 2){
                 layerData.style['border-radius'] = '100%';
             }
-
             return layerData;
         }
     },
