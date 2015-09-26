@@ -107,7 +107,15 @@ Marketch.prototype = {
         if(expConfig.artboard == 'all'){
             loopObj = doc.pages().objectEnumerator();
             while(loopVar = loopObj.nextObject()){
-                this.allArtboards.addObjectsFromArray(loopVar.artboards());
+                // 不导出以单个“-”开头的页面和画板
+                if(!/^-{1}[^-]*$/.test(loopVar.name())){
+                    var artloops = loopVar.artboards().objectEnumerator();
+                    while(artboard = artloops.nextObject()){
+                        if(!/^-{1}[^-]*$/.test(artboard.name())){
+                            this.allArtboards.addObject(artboard);
+                        }
+                    }
+                }
             }
         }
 
@@ -116,6 +124,7 @@ Marketch.prototype = {
             util.showTips({content:I18N.NOARTBOARD});
             return false;
         }
+
         //复制当前sketch文件到临时文件目录
         expConfig.saveSource && this.copySkethFile();
 
@@ -216,7 +225,7 @@ Marketch.prototype = {
                     //页面唯一id
                     pageId: theArtPageId,
                     //页面名
-                    name: util.toJSString(theArtPage.name(), {encode: true}),
+                    name: util.toJSString(theArtPage.name(), {encode: true, escapeLine:true}),
                     //页面下画板id列表（保证显示的顺序）
                     artboardId: []
                 }

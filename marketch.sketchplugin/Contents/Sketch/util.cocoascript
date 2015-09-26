@@ -271,13 +271,18 @@ var util = {
      * NSString to js string
      * @param {NSString} NSStr 待转换的字符串
      * @param {boolean} config.encode 是否编码字符串
+     * @param {boolean} config.escapeLine 是否转义字符串中的第一个“-”
      */
     toJSString: function(NSStr){
         var config = arguments.length > 1 ? arguments[1] : null;
         var str = new String(NSStr).toString();
 
+        if(config && config.escapeLine){
+            str = str.replace(/\\-/g, '-');
+        }
+
         if(config && config.encode){
-            return encodeURIComponent(str);
+            str = encodeURIComponent(str);
         }
         return str;
     },
@@ -312,13 +317,14 @@ var util = {
     getLayerData: function(layer, config){
         //图层在画板中的位置、尺寸：frameInArtboard
         var layerFrame = layer.frameInArtboard();
-        var layerId = util.toJSString(layer.objectID()); 
+        var layerId = util.toJSString(layer.objectID());
+        var nameConfig = (config.type == 'artboard') ? {encode: true, escapeLine:true} : {encode: true};
         //图层基本信息
         var layerData = {
             'id': layerId,
             //图层路径默认与图层id一致
             src: layerId,
-            name: util.toJSString(layer.name(), {encode: true}),
+            name: util.toJSString(layer.name(), nameConfig),
             x: Math.ceil(layerFrame.origin.x),
             y: Math.ceil(layerFrame.origin.y),
             zIndex: config.zIndex,
@@ -427,7 +433,7 @@ var util = {
         var style = {};
         for(var i=0,len=cssAttrs.count();i<len;i++){
             var cssAttr = util.toJSString(cssAttrs.objectAtIndex(i));
-            if(!cssAttr.match(/^\/\*.*?\*\/$/g)){
+            if(!cssAttr.match(/\/\*[^\*]*?\*\/$/g)){
                 cssAttr = cssAttr.split(':');
                 style[util.trim(cssAttr[0])] = util.trim(cssAttr[1].replace(';', ''))
             }
