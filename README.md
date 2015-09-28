@@ -8,7 +8,7 @@ Marketch is a Sketch 3 plug-in for automatically generating html page that can m
 * [new]use "-" prefix for page name or artboard name to prevent them to be exported. if you realy want "-", just use "\\-". also use "\\\" to get a "\".
 
 #### `v1.0.4`
-* [update] support for sketch beta 3.4
+* [update] add sketch beta 3.4 support
 
 #### `v1.0.0`
 * [add] supports export slice.
