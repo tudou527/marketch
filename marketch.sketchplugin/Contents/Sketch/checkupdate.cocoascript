@@ -24,7 +24,7 @@ function onRun(context){
         remoteVersion = util.convertVersion(response.version);
         
         if (remoteVersion > currentVersion){
-            util.showTips({content: I18N.NEWVERSION});
+            util.showTips({content: I18N.NEWVERSION.replace('{newversion}', response.version)});
         }else{
             util.showTips({content: ''+ manifest.version +' '+ I18N.LAETVERSION});
         }

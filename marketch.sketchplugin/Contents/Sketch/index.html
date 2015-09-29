@@ -430,13 +430,14 @@ Marketch.prototype = {
 
             pageListHtml.push('<ul class="ab-list">');
 
-            $.each(data.artboardId, function(n, artboardId){
+            for(var i=data.artboardId.length-1; i>=0; i--){
+                var artboardId = data.artboardId[i];
                 var artboradData = self.sketchData.artboard[artboardId];
                 pageListHtml.push(
                     '<li data-ab="'+ artboradData.id +'"><h3 title="' + self.decode(artboradData.name) + '">'+ self.decode(artboradData.name) +'</h3></li>'
                 );
-            });
-
+            }
+			
             pageListHtml.push('</ul></li>');
         });
 
