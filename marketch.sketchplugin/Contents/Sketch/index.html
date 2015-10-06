@@ -822,12 +822,24 @@ Marketch.prototype = {
             )
         }
         
+        //文字图层显示内容及字号
         if(layerData.html){
+            //内容块
             html.push(
                 '<dl class="pa-block">',
                     '<dt><span>', this.I18N['LAYERTEXT'] ,'</span><em>', this.I18N['COPYSUCCESS'] ,'</em></dt>',
                     '<dd>',
                         '<textarea name="content">', this.decode(layerData.html) ,'</textarea>',
+                    '</dd>',
+                '</dl>'
+            )
+
+            //字号块：根据用户选择转换单位
+            html.push(
+                '<dl class="pa-block">',
+                    '<dt><span>', this.I18N['FONTSIZE'] ,'</span><em>', this.I18N['COPYSUCCESS'] ,'</em></dt>',
+                    '<dd>',
+                        '<textarea name="fontSize">', this.getScale(layerData.style["font-size"]) ,'</textarea>',
                     '</dd>',
                 '</dl>'
             )
@@ -1024,10 +1036,11 @@ Marketch.prototype = {
     },
 
     getScale: function(pixel) {
+        var pixelNum = parseInt(pixel, 10);
         var scales = {
-            px: pixel + 'px',
-            pt: pixel * 0.75 / this.unit.factor + 'pt',
-            dp: pixel / this.unit.factor + 'dp'
+            px: pixelNum + 'px',
+            pt: pixelNum * 0.75 / this.unit.factor + 'pt',
+            dp: pixelNum / this.unit.factor + 'dp'
         }
 
         return scales[this.unit.unit];
