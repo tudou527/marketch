@@ -160,6 +160,7 @@ var util = {
                 'ARTBOARDONPAGE': '当前页面上的全部画板',
                 'ALLARTBOARD': '所有画板(会比较慢)',
                 'EXPORTEVERYLAYER': '把每个图层作为图片导出',
+                'REVEALINFINDER': '导出完成后在 Finder 中打开',
                 'CONFIRM': '确认',
                 'CANCEl': '取消',
                 //预览页面多语言
@@ -198,6 +199,7 @@ var util = {
                 'ARTBOARDONPAGE': 'Artboards on current page',
                 'ALLARTBOARD': 'All Artboards',
                 'EXPORTEVERYLAYER': 'Export all layers as image',
+                'REVEALINFINDER': 'Reveal in Finder after exporting',
                 'CONFIRM': 'Confirm',
                 'CANCEl': 'Cancel',
                 //预览页面多语言
