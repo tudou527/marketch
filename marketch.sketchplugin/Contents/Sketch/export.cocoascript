@@ -467,6 +467,7 @@ Marketch.prototype = {
     exportLayerAsImage: function(layer, options){
         var slice;
         var sliceRect = null;
+
         /**
          * absoluteInfluenceRect 虽然返回值数据类型为CGRect
          * 但是某些情况下得到的坐标尺寸与实际有1px的误差
@@ -479,14 +480,14 @@ Marketch.prototype = {
         };
 
         sliceRect = NSMakeRect(absoluteRect.x(), absoluteRect.y(), absoluteRect.width(), absoluteRect.height());
-        slice = [[MSSliceMaker slicesFromExportableLayer:layer inRect:sliceRect] firstObject];
+        slice = [[MSSliceMaker slicesFromExportableLayer:layer inRect:sliceRect useIDForName:false] firstObject];
         slice.page = doc.currentPage().copyLightweight();
         slice.format = exportConfig.format;
 
         if(options.name == 'artboard'){
             //画板按1x导出
             slice.scale = 1;
-            exportConfig.name = options.path +'/'+ options.name +'.png',
+            exportConfig.name = options.path +'/'+ options.name +'.png';
             [[MSSliceExporter dataForRequest: slice] writeToFile:exportConfig.name atomically:true];
         }else{
             //导出2x的图

@@ -19,7 +19,7 @@ var console = (function(){
             [view setVerticallyResizable:true];
             [view setHorizontallyResizable:true];
             [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-            [[view textContainer] setContainerSize:NSMakeSize(FLT_MAX, FLT_MAX)];
+            //[[view textContainer] setContainerSize:NSMakeSize(FLT_MAX, FLT_MAX)];
             [[view textContainer] setWidthTracksTextView:false];
 
             [scrollview setDocumentView:view];
