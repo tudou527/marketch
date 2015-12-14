@@ -75,7 +75,7 @@ var console = (function(){
 
             log(msg);
             view.setString(console);
-            log(msg);
+            //log(msg);
             persistent.console = console;
             view.scrollRangeToVisible(NSMakeRange(view.string.length, 0));
             [[view textStorage] setFont:[NSFont fontWithName:@"Consolas" size:11]];
@@ -149,6 +149,7 @@ var util = {
                 'language': 'cn',
                 'EXPORT': '导出',
                 'EXPORTTO': '导出到：',
+                'EXPORTING': '正在导出，请稍后...',
                 'NOARTBOARD': '没有选择任何画板',
                 'EXPORTSUCCESS': '打包导出成功',
                 'EXPORTFAIL': '打包导出失败',
@@ -189,6 +190,7 @@ var util = {
                 'EXPORT': 'Export',
                 'EXPORTTO': 'Export to',
                 'NOARTBOARD': 'No artboards found.',
+                'EXPORTING': 'Exporting...',
                 'EXPORTSUCCESS': 'Export success.',
                 'EXPORTFAIL': 'Export fail.',
                 'NEWVERSION': 'Marketch has new version({newversion}). Please reinstalling form sketch toolbox.',

@@ -34,25 +34,34 @@ ExportAsZip.prototype = {
             exportPath = this.getSavePath();
 
             if(exportPath){
-                marketch = new Marketch().run({
-                    layer: expConfig.layer,
-                    artboard: artboardType,
-                    saveSource: true
-                });
+                coscript.shouldKeepAround = true;
+                // 显示提示状态
+                doc.showMessage(I18N.EXPORTING);
 
-                zipResult = util.zipFile(marketch.tmpPath.basePath, exportPath);
+                // 延迟1s执行，避免阻塞ui
+                [coscript scheduleWithInterval:1 jsFunction:function(cinterval) {
+                    marketch = new Marketch().run({
+                        layer: expConfig.layer,
+                        artboard: artboardType,
+                        saveSource: true
+                    });
 
-                if(zipResult){
-                    //task执行成功
-                    doc.showMessage(I18N.EXPORTSUCCESS);
-                    if (expConfig.reveal) {
-                        var zipURL = [NSURL fileURLWithPath: exportPath];
-                        var fileURLs = [NSArray arrayWithObjects:zipURL, nil];
-                        [[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:fileURLs];
+                    zipResult = util.zipFile(marketch.tmpPath.basePath, exportPath);
+
+                    if(zipResult){
+                        //task执行成功
+                        doc.showMessage(I18N.EXPORTSUCCESS);
+                        if (expConfig.reveal) {
+                            var zipURL = [NSURL fileURLWithPath: exportPath];
+                            var fileURLs = [NSArray arrayWithObjects:zipURL, nil];
+                            [[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:fileURLs];
+                        }
+                    }else{
+                        doc.showMessage(I18N.EXPORTFAIL);
                     }
-                }else{
-                    doc.showMessage(I18N.EXPORTFAIL);
-                }
+
+                    coscript.shouldKeepAround = false;
+                }];
             }
         }
     },
@@ -126,7 +135,7 @@ ExportAsZip.prototype = {
     }
 }
 
-function onRun(context){
+var onRun = function(context){
     ctx = context;
     doc = context.document;
     new ExportAsZip().setup();
