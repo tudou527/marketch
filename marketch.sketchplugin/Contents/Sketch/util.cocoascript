@@ -149,7 +149,7 @@ var util = {
                 'language': 'cn',
                 'EXPORT': '导出',
                 'EXPORTTO': '导出到：',
-                'EXPORTING': '正在导出，请稍后...',
+                'EXPORTING': '正在导出，请稍候...',
                 'NOARTBOARD': '没有选择任何画板',
                 'EXPORTSUCCESS': '打包导出成功',
                 'EXPORTFAIL': '打包导出失败',
