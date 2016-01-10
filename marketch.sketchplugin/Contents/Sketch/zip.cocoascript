@@ -4,6 +4,7 @@
 var ExportAsZip = function(){};
 ExportAsZip.prototype = {
     setup: function(){
+        console.clear();
         //导出选项
         var expConfig = this.getExportConfig();
         //保存路径
@@ -43,7 +44,7 @@ ExportAsZip.prototype = {
                     marketch = new Marketch().run({
                         layer: expConfig.layer,
                         artboard: artboardType,
-                        saveSource: true
+                        saveSource: expConfig.saveSource
                     });
 
                     zipResult = util.zipFile(marketch.tmpPath.basePath, exportPath);
@@ -51,11 +52,9 @@ ExportAsZip.prototype = {
                     if(zipResult){
                         //task执行成功
                         doc.showMessage(I18N.EXPORTSUCCESS);
-                        if (expConfig.reveal) {
-                            var zipURL = [NSURL fileURLWithPath: exportPath];
-                            var fileURLs = [NSArray arrayWithObjects:zipURL, nil];
-                            [[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:fileURLs];
-                        }
+                        var zipURL = [NSURL fileURLWithPath: exportPath];
+                        var fileURLs = [NSArray arrayWithObjects:zipURL, nil];
+                        [[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:fileURLs];
                     }else{
                         doc.showMessage(I18N.EXPORTFAIL);
                     }
@@ -72,7 +71,7 @@ ExportAsZip.prototype = {
         var items = [I18N.SELECTEDARTBOARD, I18N.ARTBOARDONPAGE, I18N.ALLARTBOARD];
         var comboBox = NSComboBox.alloc().initWithFrame(NSMakeRect(0,0,200,25));
         var exportBox = NSButton.alloc().initWithFrame(NSMakeRect(0,0,250,25));
-        var revealBox = NSButton.alloc().initWithFrame(NSMakeRect(0,0,250,25));
+        var sourceBox = NSButton.alloc().initWithFrame(NSMakeRect(0,0,250,25));
 
         altWin.setMessageText('Marketch');
         altWin.setInformativeText(I18N.SELECTEXPORTARTBOARD);
@@ -86,13 +85,13 @@ ExportAsZip.prototype = {
         exportBox.setButtonType(NSSwitchButton);
         exportBox.setState(true);
         
-        revealBox.setTitle(I18N.REVEALINFINDER);
-        revealBox.setButtonType(NSSwitchButton);
-        revealBox.setState(true);
+        sourceBox.setTitle(I18N.SAVESKETCHSOURCE);
+        sourceBox.setButtonType(NSSwitchButton);
+        sourceBox.setState(true);
         
         altWin.addAccessoryView(comboBox);
         altWin.addAccessoryView(exportBox);
-        altWin.addAccessoryView(revealBox);
+        altWin.addAccessoryView(sourceBox);
 
         return {
             //用户点击按钮 确认返回1000，取消返回1001
@@ -102,7 +101,7 @@ ExportAsZip.prototype = {
             //是否导出每个图层的图片
             layer: exportBox.state(),
             //是否在导出完成后打开 Finder
-            reveal: revealBox.state()
+            saveSource: sourceBox.state()
         }
     },
 

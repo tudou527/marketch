@@ -437,7 +437,7 @@ Marketch.prototype = {
                     '<li data-ab="'+ artboradData.id +'"><h3 title="' + self.decode(artboradData.name) + '">'+ self.decode(artboradData.name) +'</h3></li>'
                 );
             }
-			
+            
             pageListHtml.push('</ul></li>');
         });
 
@@ -528,6 +528,13 @@ Marketch.prototype = {
             $.each(artboard.layer, function(index, layer){
                 var x = layer.x;
                 var y = layer.y;
+                var layerWidth = layer.width;
+                var layerHeight = layer.height;
+
+                if(layer.borderWidth){
+                    layerWidth += layer.borderWidth * 2;
+                    layerHeight += layer.borderWidth * 2;
+                }
 
                 self.currentAbData[layer.id] = layer;
 
@@ -537,8 +544,8 @@ Marketch.prototype = {
                         'position:absolute;top:', (layer.y - baseY) ,'px;',
                         'z-index:', layer.zIndex , ';',
                         'left:', (layer.x - baseX) ,'px;',
-                        'width: ', layer.width, 'px;',
-                        'height: ', layer.height, 'px;',
+                        'width: ', layerWidth, 'px;',
+                        'height: ', layerHeight, 'px;',
                     '" name="', self.decode(layer.name) ,'">',
                         //layer.html,
                     '</div>'
@@ -821,6 +828,17 @@ Marketch.prototype = {
                 '</dl>'
             )
         }
+
+        if(layerData.sharedStyle != ''){
+            html.push(
+                '<dl class="pa-block">',
+                    '<dt><span>', this.I18N[layerData.sharedStyleType] ,'</span></dt>',
+                    '<dd>',
+                        '<textarea name="content" readonly>', layerData.sharedStyle ,'</textarea>',
+                    '</dd>',
+                '</dl>'
+            )
+        }
         
         //文字图层显示内容及字号
         if(layerData.html){
@@ -901,7 +919,7 @@ Marketch.prototype = {
     formatStyle: function(styleJson){
         var style = [];
         for(var k in styleJson){
-            style.push(k +':'+ (styleJson[k].indexOf(' ') > -1 ? '"'+styleJson[k]+'"' : styleJson[k]) +';');
+            style.push(k +':'+ (styleJson[k].indexOf('font-family') > -1 ? '"'+styleJson[k]+'"' : styleJson[k]) +';');
         }
 
         return style.join('\r\n');

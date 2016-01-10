@@ -161,7 +161,7 @@ var util = {
                 'ARTBOARDONPAGE': '当前页面上的全部画板',
                 'ALLARTBOARD': '所有画板(会比较慢)',
                 'EXPORTEVERYLAYER': '把每个图层作为图片导出',
-                'REVEALINFINDER': '导出完成后在 Finder 中打开',
+                'SAVESKETCHSOURCE': '保存sketch源文件',
                 'CONFIRM': '确认',
                 'CANCEl': '取消',
                 //预览页面多语言
@@ -182,7 +182,9 @@ var util = {
                     'EXPORT': '导出',
                     'FORMAT': '格式',
                     'EXPORTLAYER': '导出选中图层',
-                    'COPYSUCCESS': '复制成功'
+                    'COPYSUCCESS': '复制成功',
+                    'TEXTSHAREDSTYLE': '文字样式',
+                    'SHAPESHAREDSTYLE': '图层样式'
                 }
             },
             'en': {
@@ -201,7 +203,7 @@ var util = {
                 'ARTBOARDONPAGE': 'Artboards on current page',
                 'ALLARTBOARD': 'All Artboards',
                 'EXPORTEVERYLAYER': 'Export all layers as image',
-                'REVEALINFINDER': 'Reveal in Finder after exporting',
+                'SAVESKETCHSOURCE': 'Save Sketch file',
                 'CONFIRM': 'Confirm',
                 'CANCEl': 'Cancel',
                 //预览页面多语言
@@ -222,7 +224,9 @@ var util = {
                     'EXPORT': 'Export',
                     'FORMAT': 'Format',
                     'EXPORTLAYER': 'Export Activity Layer',
-                    'COPYSUCCESS': 'Copy Success'
+                    'COPYSUCCESS': 'Copy Success',
+                    'TEXTSHAREDSTYLE': 'Text Styles',
+                    'SHAPESHAREDSTYLE': 'Layer Styles'
                 }
             }
         }
@@ -313,6 +317,24 @@ var util = {
         }
     },
 
+    //根据objectId获取shared style名称
+    getSharedStyleFromID: function(id, type) {
+        var sharedStyleObjects = NSArray.alloc();
+        if(type == 'text'){
+            sharedStyleObjects = doc.documentData().layerTextStyles().objects();
+        }
+        if(type == 'shape'){
+            sharedStyleObjects = doc.documentData().layerStyles().objects();
+        }
+        for (var i = 0; i < sharedStyleObjects.count(); i++) {
+            var sharedStyle = sharedStyleObjects.objectAtIndex(i);
+            if(sharedStyle.objectID() == id){
+                return sharedStyle;
+            }
+        }
+        return null;
+    },
+
     /**
      * 获取图层数据
      * @param layer 目标图层
@@ -335,8 +357,11 @@ var util = {
             y: Math.ceil(layerFrame.origin.y),
             zIndex: config.zIndex,
             width: Math.ceil(layerFrame.size.width),
-            height: Math.ceil(layerFrame.size.height)
+            height: Math.ceil(layerFrame.size.height),
+            sharedStyleType: '',
+            sharedStyle: ''
         };
+        var sharedObjectID = layer.style().sharedObjectID();
 
         //修正边框对图形、位图的位置影响
         if(config.type == 'shape' || config.type == 'bitmap'){
@@ -345,24 +370,27 @@ var util = {
 
             if(border && border.isEnabled()){
                 borderWidth = border.thickness();
-
+                layerData.borderWidth = borderWidth;
                 //边框位置为center
                 if(border.position() == 0){
                     //补偿坐标
                     layerData.x = layerData.x - parseInt(borderWidth/2, 10);
                     layerData.y = layerData.y - parseInt(borderWidth/2, 10);
                     //补偿尺寸
-                    layerData.width = layerData.width + borderWidth;
-                    layerData.height = layerData.height + borderWidth;
+                    layerData.width = layerData.width - (borderWidth);
+                    layerData.height = layerData.height - (borderWidth);
                 }
-                //边框位置为outside
+                //边框位置为Inside
+                if(border.position() == 1){
+                    //补偿尺寸
+                    layerData.width = layerData.width - (borderWidth * 2);
+                    layerData.height = layerData.height - (borderWidth * 2);
+                }
+                //边框位置为Outside
                 if(border.position() == 2){
                     //补偿坐标
-                    layerData.x = layerData.x - borderWidth;
-                    layerData.y = layerData.y - borderWidth;
-                    //补偿尺寸
-                    layerData.width = layerData.width + (borderWidth * 2);
-                    layerData.height = layerData.height + (borderWidth * 2);
+                    layerData.x = layerData.x - parseInt(borderWidth, 10);
+                    layerData.y = layerData.y - parseInt(borderWidth, 10);
                 }
             }
         }
@@ -396,6 +424,13 @@ var util = {
             if(fontWeight){
                 layerData.style['font-weight'] = fontWeight;
             }
+
+            if(sharedObjectID != null){
+                sharedStyle = util.getSharedStyleFromID(sharedObjectID, 'text');
+                layerData.sharedStyleType = 'TEXTSHAREDSTYLE';
+                layerData.sharedStyle = util.toJSString(sharedStyle.name());
+            }
+
             return layerData;
         }
 
@@ -426,6 +461,12 @@ var util = {
             if(shapeClassName == 'MSOvalShape' && Math.abs(layerData.width - layerData.height) <= 2){
                 layerData.style['border-radius'] = '100%';
             }
+
+            if(sharedObjectID != null){
+                sharedStyle = util.getSharedStyleFromID(sharedObjectID, 'shape');
+                layerData.sharedStyleType = 'SHAPESHAREDSTYLE';
+                layerData.sharedStyle = util.toJSString(sharedStyle.name());
+            }
             return layerData;
         }
     },
@@ -441,7 +482,17 @@ var util = {
             var cssAttr = util.toJSString(cssAttrs.objectAtIndex(i));
             if(!cssAttr.match(/\/\*[^\*]*?\*\/$/g)){
                 cssAttr = cssAttr.split(':');
-                style[util.trim(cssAttr[0])] = util.trim(cssAttr[1].replace(';', ''))
+                var attrKey = util.trim(cssAttr[0]);
+                var attrValue = util.trim(cssAttr[1].replace(';', ''));
+                //过滤掉无效的边框参数
+                if(attrKey === 'border' && /^0px/i.test(attrValue)){
+                    continue;
+                }
+                //除了字体外，都转换为小写
+                if(attrKey != 'font-family'){
+                    attrValue = attrValue.toLowerCase();
+                }
+                style[attrKey] = attrValue;
             }
         }
         return style;
