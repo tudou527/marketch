@@ -4,7 +4,6 @@
 var ExportAsZip = function(){};
 ExportAsZip.prototype = {
     setup: function(){
-        console.clear();
         //导出选项
         var expConfig = this.getExportConfig();
         //保存路径
