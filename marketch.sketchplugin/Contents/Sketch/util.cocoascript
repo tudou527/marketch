@@ -427,8 +427,10 @@ var util = {
 
             if(sharedObjectID != null){
                 sharedStyle = util.getSharedStyleFromID(sharedObjectID, 'text');
-                layerData.sharedStyleType = 'TEXTSHAREDSTYLE';
-                layerData.sharedStyle = util.toJSString(sharedStyle.name());
+                if(sharedStyle){
+                    layerData.sharedStyleType = 'TEXTSHAREDSTYLE';
+                    layerData.sharedStyle = util.toJSString(sharedStyle.name());
+                }
             }
 
             return layerData;
@@ -464,8 +466,10 @@ var util = {
 
             if(sharedObjectID != null){
                 sharedStyle = util.getSharedStyleFromID(sharedObjectID, 'shape');
-                layerData.sharedStyleType = 'SHAPESHAREDSTYLE';
-                layerData.sharedStyle = util.toJSString(sharedStyle.name());
+                if(sharedStyle){
+                    layerData.sharedStyleType = 'SHAPESHAREDSTYLE';
+                    layerData.sharedStyle = util.toJSString(sharedStyle.name());
+                }
             }
             return layerData;
         }
