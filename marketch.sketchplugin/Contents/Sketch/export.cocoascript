@@ -486,7 +486,7 @@ Marketch.prototype = {
 
         if(options.name == 'artboard'){
             //画板按1x导出
-            slice.scale = 1;
+            slice.scale = 2;
             exportConfig.name = options.path +'/'+ options.name +'.png';
             [[MSSliceExporter dataForRequest: slice] writeToFile:exportConfig.name atomically:true];
         }else{

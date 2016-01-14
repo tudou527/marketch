@@ -361,7 +361,6 @@ var util = {
             sharedStyleType: '',
             sharedStyle: ''
         };
-        var sharedObjectID = layer.style().sharedObjectID();
 
         //修正边框对图形、位图的位置影响
         if(config.type == 'shape' || config.type == 'bitmap'){
@@ -405,6 +404,7 @@ var util = {
             var textAlign = util.getTextAlign(layer);
             var fontWeight = util.getFontWeight(layer);
             var fontStyle = layer.style();
+            var sharedObjectId = layer.style().sharedObjectID();
 
             //文字内容
             layerData.html = util.toJSString(layer.stringValue(), {encode: true});
@@ -425,8 +425,8 @@ var util = {
                 layerData.style['font-weight'] = fontWeight;
             }
 
-            if(sharedObjectID != null){
-                sharedStyle = util.getSharedStyleFromID(sharedObjectID, 'text');
+            if(sharedObjectId != null){
+                sharedStyle = util.getSharedStyleFromID(sharedObjectId, 'text');
                 if(sharedStyle){
                     layerData.sharedStyleType = 'TEXTSHAREDSTYLE';
                     layerData.sharedStyle = util.toJSString(sharedStyle.name());
@@ -439,6 +439,7 @@ var util = {
         //图形
         if(config.type == 'shape'){
             var shapeClassName = layer.layers().firstObject().className();
+            var sharedObjectId = layer.style().sharedObjectID();
             layerData.style = util.filterSketchCss(layer.CSSAttributes());
 
             layerData.style.width = layerData.width +'px';
@@ -464,8 +465,8 @@ var util = {
                 layerData.style['border-radius'] = '100%';
             }
 
-            if(sharedObjectID != null){
-                sharedStyle = util.getSharedStyleFromID(sharedObjectID, 'shape');
+            if(sharedObjectId != null){
+                sharedStyle = util.getSharedStyleFromID(sharedObjectId, 'shape');
                 if(sharedStyle){
                     layerData.sharedStyleType = 'SHAPESHAREDSTYLE';
                     layerData.sharedStyle = util.toJSString(sharedStyle.name());
