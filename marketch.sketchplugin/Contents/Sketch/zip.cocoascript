@@ -1,4 +1,4 @@
-@import "export.cocoascript";
+@import 'export.cocoascript';
 
 //作为zip包导出
 var ExportAsZip = function(){};

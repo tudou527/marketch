@@ -1,4 +1,4 @@
-@import "util.cocoascript";
+@import 'util.cocoascript';
 
 //升级检测
 function onRun(context){

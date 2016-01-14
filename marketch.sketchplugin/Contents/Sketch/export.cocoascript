@@ -1,4 +1,4 @@
-@import "util.cocoascript";
+@import 'util.cocoascript';
 
 //上下文
 var ctx = null;
