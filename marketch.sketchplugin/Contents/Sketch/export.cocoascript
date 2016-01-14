@@ -26,7 +26,7 @@ var Marketch = function(){
         next: []
     }
     //插件目录
-    this.pluginPath = [NSString stringWithFormat:@"%@", ctx.scriptPath.replace(/\/(\w*)\.cocoascript$/, '')];
+    this.pluginPath = [NSString stringWithFormat:@'%@', ctx.scriptPath.replace(/\/(\w*)\.cocoascript$/, '')];
     //导出路径
     this.exportPath = '';
     //文件路径
@@ -138,9 +138,9 @@ Marketch.prototype = {
     initTmpPath: function(){
         //临时目录
         var tmpPath = NSTemporaryDirectory();
-        var basePath = [tmpPath stringByAppendingPathComponent: @"com.sketch.cosa"];
+        var basePath = [tmpPath stringByAppendingPathComponent: @'com.sketch.cosa'];
         var tmpFolder = new Date().getTime().toString();
-        var artboardFolder = [NSString stringWithFormat: @"%@/%@", basePath, tmpFolder];
+        var artboardFolder = [NSString stringWithFormat: @'%@/%@', basePath, tmpFolder];
         var imagePath = '';
         var dataPath = '';
 
@@ -151,9 +151,9 @@ Marketch.prototype = {
         //重新创建画板文件夹
         [[NSFileManager alloc] createDirectoryAtPath:artboardFolder withIntermediateDirectories:nil attributes:nil error:nil]; 
         //数据文件路径
-        dataPath = [artboardFolder stringByAppendingPathComponent: @"data.js"];
+        dataPath = [artboardFolder stringByAppendingPathComponent: @'data.js'];
         //html文件路径
-        htmlPath = [artboardFolder stringByAppendingPathComponent: @"index.html"];
+        htmlPath = [artboardFolder stringByAppendingPathComponent: @'index.html'];
 
         this.tmpPath.zipPath = basePath;
         //基础路径
@@ -208,7 +208,7 @@ Marketch.prototype = {
             //待处理的画板所在页面id
             var theArtPageId = util.toJSString(theArtPage.objectID());
             //画板目录
-            var artboardPath = NSString.stringWithFormat(@"%@/%@", this.tmpPath.basePath, artboardId);
+            var artboardPath = NSString.stringWithFormat(@'%@/%@', this.tmpPath.basePath, artboardId);
             //画板中的切片保存路径
             var artboardSlicePath = artboardPath.stringByAppendingPathComponent('slice');
 
@@ -394,8 +394,8 @@ Marketch.prototype = {
         //当前图层组
         var textLayers = parentLayer.children().filteredArrayUsingPredicate(predicate);
 
-        //图层尺寸小于64*64 并且不包含文字图层
-        if(frame.width <= 64 && frame.height <= 64 && textLayers.count() == 0){
+        //图层尺寸小于64*64 并且不包含文字图层，
+        if(frame.width <= 64 && frame.height <= 64 && textLayers.count() == 0 && parentLayer.class() != 'MSArtboardGroup'){
             return true;
         }
 
@@ -442,7 +442,6 @@ Marketch.prototype = {
             if(this.groupExportLayers.indexOf(theLayerId) != -1){
                 hasExportByGroup = true;
             }
-
             //判断图层蒙版
             if(theLayerId == this.currentMaskParentLayerId){
                 isMaskChildLayer = true;
@@ -497,6 +496,14 @@ Marketch.prototype = {
             slice.scale = 1;
             exportConfig.name = exportConfig.name.replace('@2x.png', '@1x.png');
             [[MSSliceExporter dataForRequest: slice] writeToFile:exportConfig.name atomically:true];
+
+            if(/^svg/i.test(layer.name())){
+                slice = [[MSSliceMaker slicesFromExportableLayer:layer] firstObject];
+                slice.format = 'svg';
+                // 图层名以“svg”开头时，作为svg导出
+                exportConfig.name = exportConfig.name.replace('@1x.png', '.svg');
+                [[MSSliceExporter dataForRequest: slice] writeToFile:exportConfig.name atomically:true];
+            }
         }
     },
 

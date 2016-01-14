@@ -78,7 +78,7 @@ var console = (function(){
             //log(msg);
             persistent.console = console;
             view.scrollRangeToVisible(NSMakeRange(view.string.length, 0));
-            [[view textStorage] setFont:[NSFont fontWithName:@"Consolas" size:11]];
+            [[view textStorage] setFont:[NSFont fontWithName:@'Consolas' size:11]];
         },
         clear: function(){
             var logWindow = logWindows();
@@ -142,7 +142,7 @@ var util = {
 
     I18N: (function(){
         var defs = [NSUserDefaults standardUserDefaults];
-        var languages = [[defs objectForKey:@"AppleLanguages"] objectAtIndex:0];
+        var languages = [[defs objectForKey:@'AppleLanguages'] objectAtIndex:0];
         //多语言配置
         var I18N = {
             'zh-cn': {
@@ -303,7 +303,7 @@ var util = {
 
         [zipTask setLaunchPath:@'/usr/bin/ditto'];
         //zip参数
-        [zipTask setArguments:[NSArray arrayWithObjects: @"-c", @"-k", @"-X", @"--rsrc", zipFile, destination, nil]];
+        [zipTask setArguments:[NSArray arrayWithObjects: @'-c', @'-k', @'-X', @'--rsrc', zipFile, destination, nil]];
 
         [zipTask launch];
         [zipTask waitUntilExit];

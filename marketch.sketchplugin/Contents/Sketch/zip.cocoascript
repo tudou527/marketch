@@ -57,7 +57,6 @@ ExportAsZip.prototype = {
                     }else{
                         doc.showMessage(I18N.EXPORTFAIL);
                     }
-
                     coscript.shouldKeepAround = false;
                 }];
             }
@@ -86,7 +85,7 @@ ExportAsZip.prototype = {
         
         sourceBox.setTitle(I18N.SAVESKETCHSOURCE);
         sourceBox.setButtonType(NSSwitchButton);
-        sourceBox.setState(true);
+        sourceBox.setState(false);
         
         altWin.addAccessoryView(comboBox);
         altWin.addAccessoryView(exportBox);
@@ -112,7 +111,7 @@ ExportAsZip.prototype = {
         savePanel.setTitle(I18N.EXPORT);
         savePanel.setNameFieldLabel(I18N.EXPORTTO);
         savePanel.setShowsTagField(false);
-        savePanel.setAllowedFileTypes(NSArray.arrayWithObject(@"zip"));
+        savePanel.setAllowedFileTypes(NSArray.arrayWithObject(@'zip'));
         savePanel.setAllowsOtherFileTypes(false);
         savePanel.setCanCreateDirectories(true);
 
@@ -123,7 +122,7 @@ ExportAsZip.prototype = {
         }
 
         //设置默认导出zip包的文件名为sketch源文件名
-        savePanel.setNameFieldStringValue([NSString stringWithFormat:@"%@.zip", docName]);
+        savePanel.setNameFieldStringValue([NSString stringWithFormat:@'%@.zip', docName]);
 
         if (savePanel.runModal() != NSOKButton){
             return false;

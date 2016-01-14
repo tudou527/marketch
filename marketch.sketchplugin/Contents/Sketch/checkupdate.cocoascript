@@ -6,9 +6,9 @@ function onRun(context){
     var doc = context.document;
     var I18N = util.I18N;
     //插件路径
-    var pluginPath = [NSString stringWithFormat:@"%@", ctx.scriptPath.replace(/\/(\w*)\.cocoascript$/, '//')];
+    var pluginPath = [NSString stringWithFormat:@'%@', ctx.scriptPath.replace(/\/(\w*)\.cocoascript$/, '//')];
     //从manifest.json中获取版本号
-    var manifestContent = [NSData dataWithContentsOfFile: [NSString stringWithFormat:@"%@manifest.json", pluginPath]];
+    var manifestContent = [NSData dataWithContentsOfFile: [NSString stringWithFormat:@'%@manifest.json', pluginPath]];
     var manifest = [NSJSONSerialization JSONObjectWithData:manifestContent options:nil error:nil];
     //插件当前版本号
     var currentVersion = null;

@@ -714,9 +714,31 @@ Marketch.prototype = {
         $('#panel').on('change', function(e){
             var el = $(e.target);
             if(el.get(0).nodeName.toLowerCase() == 'select'){
-                var scale = el.val();
-                var exportLink = $('#export-btn').attr('href').replace(/@\dx\.png$/gi, '.png');
-                $('#export-btn').attr('href', exportLink.replace('.png', scale +'.png'));
+                var type = el.attr('name');
+
+                if(type = 'format'){
+                    //修改导出类型
+                    if(el.val() == 'svg'){
+                        $('#panel').find('select[name=size]').attr('disabled', 'disabled');
+                    }else{
+                        $('#panel').find('select[name=size]').removeAttr('disabled');
+                    }
+                }
+
+                if(type == 'size' || type == 'format'){
+                    //修改导出图片路径
+                    var base = $('#export-btn').data('base');
+                    var exportScale = $('#panel').find('select[name=size]').val();
+                    var exportType = $('#panel').find('select[name=format]').val();
+                    var link = ''
+                    
+                    if(exportType == 'svg'){
+                        link = base +'.svg';
+                    }else{
+                        link = base +'@'+ exportScale +'.png'; 
+                    }
+                    $('#export-btn').attr('href', link).attr('download', link);
+                }
             }
         }).on('click', function(e){
             var el = $(e.target);
@@ -734,10 +756,10 @@ Marketch.prototype = {
             }
         })
 
-        $("body").on("click", function(e) {
-            if (!($(e.target).hasClass("unit") || $(e.target).parent().hasClass("unit"))) {
-                $(".dropdown").removeClass("active");
-                $(".unit").removeClass("active");
+        $('body').on('click', function(e) {
+            if (!($(e.target).hasClass('unit') || $(e.target).parent().hasClass('unit'))) {
+                $('.dropdown').removeClass('active');
+                $('.unit').removeClass('active');
             }
         });
 
@@ -875,21 +897,30 @@ Marketch.prototype = {
         }
 
         if(!layerData.html && this.sketchData.exportEveryLayer){
+            var formatType = '<option value="png">png</option>';
+            if(/^svg/.test(layerData.name)){
+                formatType += '<option value="svg">svg</option>'
+            }
+
             html.push(
                 '<dl class="pa-block pa-export">',
                     '<dt><span>', this.I18N['EXPORT'] ,'</span></dt>',
                     '<dd>',
                         '<ul>',
                             '<li>',
-                                '<label>', this.I18N['SIZE'] ,'</label><select><option value="@2x">2x</option><option select value="@1x">1x</option></select>',
+                                '<label>', this.I18N['SIZE'] ,'</label>',
+                                '<select name="size">',
+                                    '<option value="2x">2x</option><option select value="1x">1x</option>',
+                                '</select>',
                             '</li>',
                             '<li>',
-                                '<label>', this.I18N['FORMAT'] ,'</label><select><option value="png">png</option></select>',
+                                '<label>', this.I18N['FORMAT'] ,'</label>',
+                                '<select name="format">', formatType ,'</select>',
                             '</li>',
                         '</ul>',
                         '<div class="export-btn">',
-                            '<a id="export-btn" href="', this.currentArtboardId ,'/', objectId ,'@2x.png" ',
-                            'class="panel-export" download="', layerData.name.replace(/\//gi, '-') ,'.png">', this.I18N['EXPORTLAYER'] ,'</a>',
+                            '<a id="export-btn" href="javascript:;" data-base="', this.currentArtboardId ,'/', objectId ,'" ',
+                            'class="panel-export" download="">', this.I18N['EXPORTLAYER'] ,'</a>',
                         '</div>',
                     '</dd>',
                 '</dl>'
@@ -913,6 +944,8 @@ Marketch.prototype = {
             }
         });
         $('#wrap').width($('#wrap').attr('data-width') - 200);
+
+        $('select').change();
     },
 
     //格式化css json数据
