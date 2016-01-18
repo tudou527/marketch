@@ -83,7 +83,7 @@ var console = (function(){
         clear: function(){
             var logWindow = logWindows();
             var view = logWindow.contentView().documentView();
-            
+
             logWindow.makeKeyAndOrderFront(nil);
 
             console = '';
@@ -97,7 +97,7 @@ var util = {
     getFontWeight: function(layer){
         var app = NSApplication.sharedApplication();
         var appVersion = parseFloat(app.applicationVersion(), 10);
-        
+
         if(appVersion <= 3.3){
             var layerFont = layer.font();
             var fontManager = [NSFontManager sharedFontManager];
@@ -191,38 +191,38 @@ var util = {
                 'EXPORTTO': 'Export to',
                 'NOARTBOARD': 'No artboards found.',
                 'EXPORTING': 'Exporting...',
-                'EXPORTSUCCESS': 'Export success.',
-                'EXPORTFAIL': 'Export fail.',
-                'NEWVERSION': 'Marketch has new version({newversion}). Please reinstalling form sketch toolbox.',
+                'EXPORTSUCCESS': 'Successfully Exported.',
+                'EXPORTFAIL': 'Failed to Export.',
+                'NEWVERSION': 'Marketch has a newer version({newversion}). Please reinstall from Sketch Toolbox.',
                 'LAETVERSION': 'is currently the newest version available.',
                 'NETERROR': 'Service is not available.',
-                'SELECTEXPORTARTBOARD': 'Which artboards would you like to export?',
-                'SELECTEDARTBOARD': 'Selected artboard',
-                'ARTBOARDONPAGE': 'Artboards on current page',
+                'SELECTEXPORTARTBOARD': 'Which artboard would you like to export?',
+                'SELECTEDARTBOARD': 'Selected Artboard(s)',
+                'ARTBOARDONPAGE': 'Artboards on Current Page',
                 'ALLARTBOARD': 'All Artboards',
                 'EXPORTEVERYLAYER': 'Export all layers as image',
-                'REVEALINFINDER': 'Reveal in Finder after exporting',
+                'REVEALINFINDER': 'Show in Finder after exported',
                 'CONFIRM': 'Confirm',
                 'CANCEl': 'Cancel',
                 //预览页面多语言
                 'MarketchPreview': {
                     'UNIT': 'Unit',
                     'SIZE': 'Size',
-                    'SHOWSLICE': 'Show slice',
+                    'SHOWSLICE': 'Show slices',
                     'DRAGTOSAVE': 'Drag to desktop to save.',
                     'WIDTH': 'Width',
                     'HEIGHT': 'Height',
                     'BORDER': 'Border',
-                    'COLOR': 'color',
+                    'COLOR': 'Color',
                     'FILLCOLOR': 'Fill',
                     'RADIUS': 'Radius',
                     'LAYERTEXT': 'Content',
-                    'FONTSIZE': 'Font size',
+                    'FONTSIZE': 'Font Size',
                     'CODE': 'Code',
                     'EXPORT': 'Export',
                     'FORMAT': 'Format',
-                    'EXPORTLAYER': 'Export Activity Layer',
-                    'COPYSUCCESS': 'Copy Success'
+                    'EXPORTLAYER': 'Export Active Layer',
+                    'COPYSUCCESS': 'Successfully Exported'
                 }
             }
         }
@@ -317,7 +317,7 @@ var util = {
      * 获取图层数据
      * @param layer 目标图层
      * @param config.type 图层类型
-     * @param config.zIndex 
+     * @param config.zIndex
      * @return object
      */
     getLayerData: function(layer, config){
@@ -421,7 +421,7 @@ var util = {
             if(layerData.style['background']){
                 layerData.background = layerData.style['background'];
             }
-            
+
             //正圆形（长宽误差2px以内）补充borderRadius属性
             if(shapeClassName == 'MSOvalShape' && Math.abs(layerData.width - layerData.height) <= 2){
                 layerData.style['border-radius'] = '100%';
