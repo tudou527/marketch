@@ -85,7 +85,7 @@ input[type=text], textarea {outline:0;padding:3px;}
             .sketch-marker .skm-tr {top:-4px;right:-4px;}
             .sketch-marker .skm-bl {bottom:-4px;left:-4px;}
             .sketch-marker .skm-br {bottom:-4px;right:-4px;}
-            
+
             .skm-w, .skm-h {position:relative;display:inline-block;vertical-align:middle;z-index:2;}
                 .skm-w:after, .skm-h:after {display:block;top:0;left:0;right:0;padding:0 5px;border-radius:3px;height:18px;line-height:18px;font-size:12px;font-weight:100;color:#FE3B00;background:#fff;}
             .sketch-marker .skm-w {margin-top:-39px;padding-bottom:5px;}
@@ -113,14 +113,14 @@ input[type=text], textarea {outline:0;padding:3px;}
         .skl-top {margin-top:-1px;}
         .skl-left, .skl-right {top:0;width:0;border-left:1px dashed #FE3B00;}
         .skl-left {margin-left:-1px;}
-    
+
         /* 切片 */
         .sk-slice {position:absolute;display:none;top:-1000px;left:-1000px;z-index:101;}
         .wrap-slice-active .sk-slice {display:block;}
             .sk-slice a {float:left;position:relative;margin:1px 5px 0 1px;overflow:hidden;}
                 .sk-slice span {float:left;position:relative;z-index:0;width:35px;border-radius:2px;height:21px;line-height:21px;text-align:center;font-size:11px;color:#fff;background:rgba(0,0,0,.6);}
                 .sk-slice a img {position:absolute;z-index:1;width:100%;height:100%;opacity:0;}
-    /**/    
+    /**/
     .panel {position:fixed;top:30px;z-index:11;right:-200px;bottom:0;padding:10px 10px 10px 10px;width:180px;color:#fff;background:#2B3A48;-webkit-transition:right 0.1s ease-in-out;}
     .panel-active {right:0;}
         .panel dl {margin-bottom:10px;line-height:23px;}
@@ -131,12 +131,12 @@ input[type=text], textarea {outline:0;padding:3px;}
                 .panel ul {overflow:hidden;}
                     .panel ul li {float:left;width:50%;white-space:nowrap;overflow:hidden;}
                         .panel li label {float:left;width:35px;color:#9CA3A7;padding-right:5px;}
-        
+
         /* 一行 */
         .pa-inline {overflow:hidden;}
             .pa-inline dt {float:left;width:38px;padding-right:6px;}
             .pa-inline dd {overflow:hidden;}
-                    
+
         /* 多行 */
         .pa-block {}
             .pa-block dt {position:relative;}
@@ -144,7 +144,7 @@ input[type=text], textarea {outline:0;padding:3px;}
                 .copy-success dt em {visibility:visible;}
             .pa-block dd {}
                 .pa-block textarea {padding:3px;border-radius:3px;width:174px;height:19px;border:0;color:#b3b8bd;background:#555C64;resize:none;overflow-y:scroll;font-size:11px;font-family:Consolas;}
-        
+
         /* 导出 */
         .pa-export {overflow:hidden;}
             .pa-export ul {margin-bottom:10px;overflow:hidden;}
@@ -240,7 +240,7 @@ var Marketch = function(obj){
 Marketch.prototype = {
     setup: function(){
         var html = $('#page textarea').val();
-        
+
         $.each(this.I18N, function(key, value){
             var reg = new RegExp('{'+ key +'}', 'g');
             html = html.replace(reg, value);
@@ -348,7 +348,7 @@ Marketch.prototype = {
     buildRuler: function(){
         var frageElement = document.createDocumentFragment();
         var className = ['skm-r-top', 'skm-r-right', 'skm-r-bottom', 'skm-r-left']
-        
+
         for(var i=0,len=className.length;i<len;i++){
             var node = document.createElement('div');
             node.id = className[i];
@@ -437,7 +437,7 @@ Marketch.prototype = {
                     '<li data-ab="'+ artboradData.id +'"><h3 title="' + self.decode(artboradData.name) + '">'+ self.decode(artboradData.name) +'</h3></li>'
                 );
             }
-            
+
             pageListHtml.push('</ul></li>');
         });
 
@@ -595,7 +595,7 @@ Marketch.prototype = {
     /**
      * 交换maskzIndex
      * @param obj.maskData mask数据
-     * @return 
+     * @return
      */
     resetMask: function(obj){
         $.each(obj.maskData, function(maskId, childItem){
@@ -674,7 +674,7 @@ Marketch.prototype = {
 
                 self.changeLightHouseState();
                 self.changeRulerState('none', {});
-                
+
                 $('#panel').removeClass('panel-active');
                 $('#wrap').width($('#wrap').attr('data-width'))
                 $('#wrap').find('.art-slice-active').removeClass('art-slice-active');
@@ -861,7 +861,7 @@ Marketch.prototype = {
                 '</dl>'
             )
         }
-        
+
         //文字图层显示内容及字号
         if(layerData.html){
             //内容块
@@ -964,7 +964,7 @@ Marketch.prototype = {
         $('#skm-r-left').css('visibility', 'hidden');
         $('#skm-r-right').css('visibility', 'hidden');
         $('#skm-r-bottom').css('visibility', 'hidden');
-        
+
         if(type == 'none'){return false;}
 
         //向上的标尺
@@ -1130,7 +1130,7 @@ Marketch.prototype = {
             //mouseover节y坐标
             ty: targetEl.position().top
         }
-        
+
         //鼠标经过的图层在选中图层上方(T1 T2的位置)
         if(data.sy - (data.ty + data.th) >= buffer){
             if(data.sx - (data.tx + data.tw) >= buffer){
