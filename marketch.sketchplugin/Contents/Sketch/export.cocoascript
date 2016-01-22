@@ -474,34 +474,35 @@ Marketch.prototype = {
         var absoluteRect = layer.absoluteRect();
         //导出配置
         var exportConfig = {
-            name: options.path +'/'+ options.name +'@2x.png',
+            name: options.path +'/'+ options.name +'@1x.png',
             format: 'png'
         };
 
         sliceRect = NSMakeRect(absoluteRect.x(), absoluteRect.y(), absoluteRect.width(), absoluteRect.height());
-        slice = [[MSSliceMaker slicesFromExportableLayer:layer inRect:sliceRect useIDForName:false] firstObject];
+        slice = [[MSSliceMaker slicesFromExportableLayer:layer] firstObject];
         slice.page = doc.currentPage().copyLightweight();
         slice.format = exportConfig.format;
 
         if(options.name == 'artboard'){
-            //画板按1x导出
+            //画板按2x导出
             slice.scale = 2;
             exportConfig.name = options.path +'/'+ options.name +'.png';
             [[MSSliceExporter dataForRequest: slice] writeToFile:exportConfig.name atomically:true];
         }else{
-            //导出2x的图
-            slice.scale = 2;
+            //导出1x的图(认为默认情况下的图片是2x)
+            slice.scale = 0.5;
             [[MSSliceExporter dataForRequest: slice] writeToFile:exportConfig.name atomically:true];
-            //导出1x的图
-            slice.scale = 1;
-            exportConfig.name = exportConfig.name.replace('@2x.png', '@1x.png');
+
+            //导出3x的图(认为默认情况下的图片是2x)
+            slice.scale = 1.5;
+            exportConfig.name = exportConfig.name.replace('@1x.png', '@3x.png');
             [[MSSliceExporter dataForRequest: slice] writeToFile:exportConfig.name atomically:true];
 
             if(/^svg/i.test(layer.name())){
                 slice = [[MSSliceMaker slicesFromExportableLayer:layer] firstObject];
                 slice.format = 'svg';
                 // 图层名以“svg”开头时，作为svg导出
-                exportConfig.name = exportConfig.name.replace('@1x.png', '.svg');
+                exportConfig.name = exportConfig.name.replace('@3x.png', '.svg');
                 [[MSSliceExporter dataForRequest: slice] writeToFile:exportConfig.name atomically:true];
             }
         }
