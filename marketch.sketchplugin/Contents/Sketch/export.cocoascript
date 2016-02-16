@@ -108,10 +108,10 @@ Marketch.prototype = {
             loopObj = doc.pages().objectEnumerator();
             while(loopVar = loopObj.nextObject()){
                 // 不导出以单个“-”开头的页面和画板
-                if(!/^-{1}[^-]*$/.test(loopVar.name())){
+                if(!/^-{1}[^-]*?.*$/.test(loopVar.name())){
                     var artloops = loopVar.artboards().objectEnumerator();
                     while(artboard = artloops.nextObject()){
-                        if(!/^-{1}[^-]*$/.test(artboard.name())){
+                        if(!/^-{1}[^-]*?.*$/.test(artboard.name())){
                             this.allArtboards.addObject(artboard);
                         }
                     }
