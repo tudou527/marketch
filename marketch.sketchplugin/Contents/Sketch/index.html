@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>demo</title>
+<title>Marketch(https://github.com/tudou527)</title>
 <style>
 html,body {overflow:hidden;width:100%;height:100%;position:relative;}
 body,h1,h2,h3,h4,h5,h6,p,blockquote,dl,dt,dd,ul,ol,li,pre,form,fieldset,legend,button,input,textarea,th,td {margin:0;padding:0;}
@@ -148,9 +148,10 @@ input[type=text], textarea {outline:0;padding:3px;}
         /* 导出 */
         .pa-export {overflow:hidden;}
             .pa-export ul {margin-bottom:10px;overflow:hidden;}
-                .pa-export li {float:left;width:50%;}
-                    .pa-export li label {float:left;padding-right:5px;line-height:25px;}
-                    .pa-export li select {width:45px;}
+                .pa-export ul li {float:left;width:auto;}
+                .pa-export li:first-child {margin-right:10px;}
+                    .pa-export li label {float:left;padding-right:5px;width:auto;line-height:25px;}
+                    .pa-export li select {width:50px;}
             .export-btn {text-align:center;}
                 .panel-export, .panel-export:hover {display:inline-block;padding:0 15px;height:24px;line-height:24px;border-radius:3px;color:#b3b8bd;box-shadow:0 0 3px rgba(0,0,0,.4);background:#434950;}
 
@@ -910,7 +911,10 @@ Marketch.prototype = {
                             '<li>',
                                 '<label>', this.I18N['SIZE'] ,'</label>',
                                 '<select name="size">',
-                                    '<option value="3x">3x</option><option select value="1x">1x</option>',
+                                    '<option select value="1x">1x</option>',
+                                    '<option value="2x">2x</option>',
+                                    '<option value="0.5x">0.5x</option>',
+                                    '<option value="3x">3x</option>',
                                 '</select>',
                             '</li>',
                             '<li>',

@@ -232,7 +232,7 @@ var util = {
         }
 
         //获取到语言后重新设置I18N变量，以简化操作
-        if(languages != 'zh-Hans'){
+        if(languages !== 'zh-Hans'){
             return I18N['en'];
         }else{
             return I18N['zh-cn'];

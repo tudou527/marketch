@@ -68,8 +68,8 @@ ExportAsZip.prototype = {
         var altWin = COSAlertWindow.new();
         var items = [I18N.SELECTEDARTBOARD, I18N.ARTBOARDONPAGE, I18N.ALLARTBOARD];
         var comboBox = NSComboBox.alloc().initWithFrame(NSMakeRect(0,0,200,25));
-        var exportBox = NSButton.alloc().initWithFrame(NSMakeRect(0,0,250,25));
-        var sourceBox = NSButton.alloc().initWithFrame(NSMakeRect(0,0,250,25));
+        var exportBox = NSButton.alloc().initWithFrame(NSMakeRect(0,0,250,14));
+        var sourceBox = NSButton.alloc().initWithFrame(NSMakeRect(0,0,250,14));
 
         altWin.setMessageText('Marketch');
         altWin.setInformativeText(I18N.SELECTEXPORTARTBOARD);
