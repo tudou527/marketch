@@ -343,13 +343,13 @@ Marketch.prototype = {
                     case 'MSTextLayer':
                         //保存文字图层数据
                         layerData = util.getLayerData(theLayer, {type: 'text', zIndex: this.artboardZIndex});
-                        artboardData.layer.push(layerData);
+                        layerData && artboardData.layer.push(layerData);
                         break;
 
                     case 'MSSliceLayer':
                         //保存切片图层数据
                         layerData = util.getLayerData(theLayer, {type: 'slice', zIndex: this.artboardZIndex});
-                        artboardData.slice.push(layerData);
+                        layerData && artboardData.slice.push(layerData);
                         //导出切片
                         exportLayerAsImage && this.exportLayerAsImage(theLayer, {
                             name: layerName,
@@ -360,7 +360,7 @@ Marketch.prototype = {
                     case 'MSBitmapLayer':
                         //保存位图数据
                         layerData = util.getLayerData(theLayer, {type: 'bitmap', zIndex: this.artboardZIndex});
-                        artboardData.layer.push(layerData);
+                        layerData && artboardData.layer.push(layerData);
                         //导出位图
                         exportLayerAsImage && this.exportLayerAsImage(theLayer, exportConfig);
                         break;
@@ -368,7 +368,7 @@ Marketch.prototype = {
                     case 'MSShapeGroup':
                         //保存形状数据
                         layerData = util.getLayerData(theLayer, {type: 'shape', zIndex: this.artboardZIndex});
-                        artboardData.layer.push(layerData);
+                        layerData && artboardData.layer.push(layerData);
                         //导出形状组图片
                         exportLayerAsImage && this.exportLayerAsImage(theLayer, exportConfig);
                         break;

@@ -141,8 +141,7 @@ var util = {
     },
 
     I18N: (function(){
-        var defs = [NSUserDefaults standardUserDefaults];
-        var languages = [[defs objectForKey:@'AppleLanguages'] objectAtIndex:0];
+        var language = [[[NSUserDefaults standardUserDefaults] objectForKey:@'AppleLanguages'] objectAtIndex:0];
         //多语言配置
         var I18N = {
             'zh-cn': {
@@ -230,9 +229,8 @@ var util = {
                 }
             }
         }
-
         //获取到语言后重新设置I18N变量，以简化操作
-        if(languages !== 'zh-Hans'){
+        if(new String(language).toString() !== 'zh-Hans'){
             return I18N['en'];
         }else{
             return I18N['zh-cn'];
@@ -436,8 +434,8 @@ var util = {
             return layerData;
         }
 
-        //图形
-        if(config.type == 'shape'){
+        //图形(layer.layers().firstObject()判断是否为空图形)
+        if(config.type == 'shape' && layer.layers().firstObject() != null){
             var shapeClassName = layer.layers().firstObject().className();
             var sharedObjectId = layer.style().sharedObjectID();
             layerData.style = util.filterSketchCss(layer.CSSAttributes());
@@ -474,6 +472,8 @@ var util = {
             }
             return layerData;
         }
+
+        return null;
     },
 
     trim: function(str){
