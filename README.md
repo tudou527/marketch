@@ -53,4 +53,4 @@ If you want to contribute to our code base, here's a [contribution guide](contri
 ## Thanks
 * [MForever78](https://github.com/MForever78)
 * [noyobo](https://github.com/noyobo)
-* 许诺
+* [xunuo](https://github.com/xunuo)
