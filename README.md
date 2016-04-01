@@ -31,7 +31,7 @@ Notice
 
 ## Preview
 
-![preview](resource/1.jpg)
+![preview](resource/README_1.png)
 ![preview](resource/2.png)
 
 ## Demo
