@@ -31,8 +31,11 @@ Notice
 
 ## Preview
 
-![preview](resource/README_1.png)
 ![preview](resource/2.png)
+![preview](resource/README_1.png)
+![preview](resource/README_2.png)
+![preview](resource/README_3.png)
+![preview](resource/README_4.png)
 
 ## Demo
 [http://tudou527.github.io/marketch/](http://tudou527.github.io/marketch/)
