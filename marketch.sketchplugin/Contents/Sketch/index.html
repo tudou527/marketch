@@ -45,9 +45,12 @@ input[type=text], textarea {outline:0;padding:3px;}
     .header {padding:0;height:60px;background:#FFFFFF;box-shadow:0 0 6px rgba(0,0,0,.2);z-index: 1;position: absolute;width: 100%;}
         .hd-slice {float:right;margin-right:20px;position:relative;padding-right:75px;line-height:60px;color:black;overflow:hidden;}
             .hd-slice input {position:absolute;z-index:1;top:20px;right:0;width:65px;height:24px;opacity:0;cursor:pointer;}
-            .hd-slice label {position:absolute;top:20px;right:0;background:red;width:65px;height:22px;border-radius:22px;background:rgba(0,0,0,.4);}
-                .hd-slice label i {float:left;margin:2px 0 0 2px;width:45%;top:2px;left:2px;height:18px;border-radius:20px;color:#ddd;background:#ddd;}
-                .hd-slice input:checked + label i {margin-left:34px;}
+            .hd-slice label {position:absolute;top:20px;right:0;background:red;width:65px;height:22px;border-radius:22px;background:#ddd;}
+                .hd-slice label i {float:left;margin:2px 0 0 2px;width:45%;top:2px;left:2px;height:18px;border-radius:20px;color:#F2F3F7;background:#F2F3F7;transition: margin-left .1s cubic-bezier(0.18, 0.89, 0.32, 1.28); -webkit-transition: margin-left .1s cubic-bezier(0.18, 0.89, 0.32, 1.28);}
+                .hd-slice input:checked + label i {margin-left:34px; background: white}
+                .hd-slice input:checked + label {background-color: #4CD964;}
+                .hd-slice input:checked + label i:before {color: white;}
+                .hd-slice input:checked + label i:after {color: white;}
                     .hd-slice label i:before, .hd-slice label i:after {position:absolute;top:0;width:50%;height:22px;line-height:22px;text-align:center;font-style:normal;}
                     .hd-slice label i:before {left:0;content:'ON';}
                     .hd-slice label i:after {right:0;content:'OFF';text-indent:-1px;}
