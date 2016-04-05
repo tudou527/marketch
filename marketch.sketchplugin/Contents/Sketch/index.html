@@ -148,8 +148,8 @@ input[type=text], textarea {outline:0;padding:3px;}
         .pa-block {}
             .pa-block h2 {color: #FFFFFF; font-weight: normal; font-size: 16px; text-align: center; padding: 5px 10px 15px; border-bottom: 1px solid #434950;}
             .pa-block dt {position:relative; margin-bottom: 10px}
-                .pa-block dt em {position:absolute;visibility:hidden;top:0;right:0;padding:0 10px 0 0;background-color: #20E8B4; line-height: 1; font-size: 10px; color: #076B51; padding: 2px 5px; border-radius: 2px;}
-                .copy-success dt em {visibility:visible;}
+                .pa-block dt em {position:absolute;opacity: 0;top:5px;right:0;padding:0 10px 0 0;background-color: #20E8B4; line-height: 1; font-size: 10px; color: #076B51; padding: 2px 5px; border-radius: 2px;transition: opacity .2s ease-out; -webkit-transition: opacity .2s ease-out;}
+                .copy-success dt em {opacity: 1}
             .pa-block dd {}
                 .pa-block textarea {padding:10px;border-radius:3px;width:174px;height:19px;border:0;color:#b3b8bd;background:#434950;resize:none;overflow-y:scroll;font-size:11px;font-family:Consolas;}
 
