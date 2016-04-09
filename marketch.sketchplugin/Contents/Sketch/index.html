@@ -45,9 +45,12 @@ input[type=text], textarea {outline:0;padding:3px;}
     .header {padding:0;height:60px;background:#FFFFFF;box-shadow:0 0 6px rgba(0,0,0,.2);z-index: 1;position: absolute;width: 100%;}
         .hd-slice {float:right;margin-right:20px;position:relative;padding-right:75px;line-height:60px;color:black;overflow:hidden;}
             .hd-slice input {position:absolute;z-index:1;top:20px;right:0;width:65px;height:24px;opacity:0;cursor:pointer;}
-            .hd-slice label {position:absolute;top:20px;right:0;background:red;width:65px;height:22px;border-radius:22px;background:rgba(0,0,0,.4);}
-                .hd-slice label i {float:left;margin:2px 0 0 2px;width:45%;top:2px;left:2px;height:18px;border-radius:20px;color:#ddd;background:#ddd;}
-                .hd-slice input:checked + label i {margin-left:34px;}
+            .hd-slice label {position:absolute;top:20px;right:0;background:red;width:65px;height:22px;border-radius:22px;background:#ddd;}
+                .hd-slice label i {float:left;margin:2px 0 0 2px;width:45%;top:2px;left:2px;height:18px;border-radius:20px;color:#F2F3F7;background:#F2F3F7;transition: margin-left .1s cubic-bezier(0.18, 0.89, 0.32, 1.28); -webkit-transition: margin-left .1s cubic-bezier(0.18, 0.89, 0.32, 1.28);}
+                .hd-slice input:checked + label i {margin-left:34px; background: white}
+                .hd-slice input:checked + label {background-color: #4CD964;}
+                .hd-slice input:checked + label i:before {color: white;}
+                .hd-slice input:checked + label i:after {color: white;}
                     .hd-slice label i:before, .hd-slice label i:after {position:absolute;top:0;width:50%;height:22px;line-height:22px;text-align:center;font-style:normal;}
                     .hd-slice label i:before {left:0;content:'ON';}
                     .hd-slice label i:after {right:0;content:'OFF';text-indent:-1px;}
@@ -124,26 +127,32 @@ input[type=text], textarea {outline:0;padding:3px;}
                 .sk-slice a img {position:absolute;z-index:1;width:100%;height:100%;opacity:0;}
     /**/
     .panel {position:fixed;top:60px;z-index:0;right:-200px;bottom:0;padding:10px 10px 10px 10px;width:180px;color:#fff;background: #555c64;-webkit-transition:right 0.1s ease-in-out;}
+    .panel input::selection, .panel textarea::selection {color: white;background-color: rgba(78, 150, 247, 0.75);}
     .panel-active {right:0;}
         .panel dl {margin-bottom:20px;line-height:23px;}
             .panel dt {color:#9CA3A7;overflow:hidden;}
-                .panel dt span {font-weight:700;}
+                .panel dt span {font-size: 12px; color: #ddd; line-height: 2; display: block;}
                 .panel dt em {font-weight:100;}
             .panel dd {overflow:hidden;}
                 .panel ul {overflow:hidden;}
-                    .panel ul li {float:left;width:50%;white-space:nowrap;overflow:hidden;}
-                        .panel li label {float:left;width:35px;color:#9CA3A7;padding-right:5px;}
+                    .panel ul li {float:left;white-space:nowrap;overflow:hidden;}
+                        .panel li label {float:left;width:35px;color:#9CA3A7;padding-right:5px; width: 100%; text-align: center;}
+                        .panel li input {cursor: text; width: 70px; display: block; color: #b3b8bd; background: #434950; border: 0; padding: 5px 8px;}
+                    .panel ul li:nth-child(even) {float: right;}
 
         /* 一行 */
         .pa-inline {overflow:hidden;}
-            .pa-inline dt {float:left;width:38px;padding-right:6px;}
+            .pa-inline dt {float:left;width:70px;padding-right:6px;}
             .pa-inline dd {overflow:hidden;}
+            .pa-inline dd p {background-color: #434950; color: #b3b8bd; width: 70px; float: right; padding: 5px 8px; line-height: 14px; height: 14px;}
+            .pa-inline dd p span {width: 12px; height: 12px; display: inline-block; border-radius: 2px; border: 0.5px solid black; float: right}
 
         /* 多行 */
         .pa-block {}
-            .pa-block dt {position:relative;}
-                .pa-block dt em {position:absolute;visibility:hidden;top:0;right:0;padding:0 10px 0 0;color:#20E8B4;}
-                .copy-success dt em {visibility:visible;}
+            .pa-block h2 {color: #FFFFFF; font-weight: normal; font-size: 16px; text-align: center; padding: 5px 10px 15px; border-bottom: 1px solid #434950;}
+            .pa-block dt {position:relative; margin-bottom: 10px}
+                .pa-block dt em {position:absolute;opacity: 0;top:5px;right:0;padding:0 10px 0 0;background-color: #20E8B4; line-height: 1; font-size: 10px; color: #076B51; padding: 2px 5px; border-radius: 2px;transition: opacity .2s ease-out; -webkit-transition: opacity .2s ease-out;}
+                .copy-success dt em {opacity: 1}
             .pa-block dd {}
                 .pa-block textarea {padding:10px;border-radius:3px;width:174px;height:19px;border:0;color:#b3b8bd;background:#434950;resize:none;overflow-y:scroll;font-size:11px;font-family:monospace,Consolas;}
 
@@ -653,7 +662,7 @@ Marketch.prototype = {
                     }
                 }else{
                     if(el.hasClass('art-slice')){
-                        var slicePath = self.currentArtboardId +'/slice/'+ self.currentAbData[id].name; 
+                        var slicePath = self.currentArtboardId +'/slice/'+ self.currentAbData[id].name;
                         $('#wrap .art-slice-active').removeClass('art-slice-active');
                         //显示切片
                         $('#sk-slice').css({
@@ -734,11 +743,11 @@ Marketch.prototype = {
                     var exportScale = $('#panel').find('select[name=size]').val();
                     var exportType = $('#panel').find('select[name=format]').val();
                     var link = ''
-                    
+
                     if(exportType == 'svg'){
                         link = base +'.svg';
                     }else{
-                        link = base +'@'+ exportScale +'.png'; 
+                        link = base +'@'+ exportScale +'.png';
                     }
                     $('#export-btn').attr('href', link).attr('download', link);
                 }
@@ -806,13 +815,16 @@ Marketch.prototype = {
 
         html.push(
             '<dl class="pa-block">',
-                '<dt><span>', this.decode(layerData.name) ,'</span></dt>',
+                '<dt><h2>', this.decode(layerData.name), '</h2></dt>',
+            '</dl>',
+            '<dl class="pa-block">',
+                '<dt><span>Position & Size</span></dt>',
                 '<dd>',
                     '<ul>',
-                        '<li><label>X</label>', this.getScale(layerData.x) ,'</li>',
-                        '<li><label>Y</label>', this.getScale(layerData.y) ,'</li>',
-                        '<li><label>', this.I18N['WIDTH'] ,'</label>', this.getScale(layerData.width) ,'</li>',
-                        '<li><label>', this.I18N['HEIGHT'] ,'</label>', this.getScale(layerData.height) ,'</li>',
+                        '<li><input value="', this.getScale(layerData.x) ,'" readonly><label>X</label></li>',
+                        '<li><input value="', this.getScale(layerData.y) ,'" readonly><label>Y</label></li>',
+                        '<li><input value="', this.getScale(layerData.width) ,'" readonly><label>', this.I18N['WIDTH'] ,'</label></li>',
+                        '<li><input value="', this.getScale(layerData.height) ,'" readonly><label>', this.I18N['HEIGHT'] ,'</label></li>',
                     '</ul>',
                 '</dd>',
             '</dl>'
@@ -837,7 +849,7 @@ Marketch.prototype = {
                 '<dl class="pa-inline">',
                     '<dt><span>', this.I18N['FILLCOLOR'] ,'</span></dt>',
                     '<dd>',
-                        '<p>', layerData.background ,'</p>',
+                        '<p>', layerData.background , '<span style="background-color:', layerData.background, ';"></span></p>',
                     '</dd>',
                 '</dl>'
             )
