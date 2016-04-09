@@ -2,6 +2,8 @@
 
 Marketch is a Sketch 3 plug-in for automatically generating html page that can measure and get CSS styles on it.
 
+![Banner](https://raw.githubusercontent.com/angusjune/marketch/master/logo.png)
+
 ## Change Log 
 
 #### `v1.0.18`
