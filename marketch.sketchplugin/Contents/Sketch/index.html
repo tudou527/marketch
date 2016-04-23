@@ -126,7 +126,7 @@ input[type=text], textarea {outline:0;padding:3px;}
         .sk-slice span {float:left;position:relative;z-index:0;width:35px;border-radius:2px;height:21px;line-height:21px;text-align:center;font-size:11px;color:#fff;background:rgba(0,0,0,.6);}
         .sk-slice a img {position:absolute;z-index:1;width:100%;height:100%;opacity:0;}
     /**/
-    .panel {position:fixed;top:60px;z-index:0;right:-200px;bottom:0;padding:10px 10px 10px 10px;width:180px;color:#fff;background: #555c64;-webkit-transition:right 0.1s ease-in-out;}
+    .panel {position:fixed;top:60px;z-index:0;right:-220px;bottom:0;padding:10px 10px 10px 10px;width:200px;color:#fff;background: #555c64;-webkit-transition:right 0.1s ease-in-out;}
       .panel input::selection, .panel textarea::selection {color: white;background-color: rgba(78, 150, 247, 0.75);}
     .panel-active {right:0;}
       .panel dl {margin-bottom:20px;line-height:23px;}
@@ -155,6 +155,11 @@ input[type=text], textarea {outline:0;padding:3px;}
         .copy-success dt em {opacity: 1}
       .pa-block dd {}
         .pa-block textarea {padding:10px;border-radius:3px;width:174px;height:19px;border:0;color:#b3b8bd;background:#434950;resize:none;overflow-y:scroll;font-size:11px;font-family:monospace,Consolas;}
+
+    /* 填充 */
+    .pa-fill {}
+      .pa-fill dt {width:auto;}
+      .pa-fill dd p {width:auto;padding:5px 3px;}
 
     /* 导出 */
     .pa-export {overflow:hidden;}
@@ -846,7 +851,7 @@ Marketch.prototype = {
 
     if(layerData.background){
       html.push(
-        '<dl class="pa-inline">',
+        '<dl class="pa-inline pa-fill">',
           '<dt><span>', this.I18N['FILLCOLOR'] ,'</span></dt>',
           '<dd>',
             '<p>', layerData.background , '<span style="background-color:', layerData.background, ';"></span></p>',
