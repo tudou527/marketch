@@ -2,33 +2,33 @@
 
 //升级检测
 function onRun(context){
-    var ctx = context;
-    var doc = context.document;
-    var I18N = util.I18N;
-    //插件路径
-    var pluginPath = [NSString stringWithFormat:@'%@', ctx.scriptPath.replace(/\/(\w*)\.cocoascript$/, '//')];
-    //从manifest.json中获取版本号
-    var manifestContent = [NSData dataWithContentsOfFile: [NSString stringWithFormat:@'%@manifest.json', pluginPath]];
-    var manifest = [NSJSONSerialization JSONObjectWithData:manifestContent options:nil error:nil];
-    //插件当前版本号
-    var currentVersion = null;
-    //插件当前版本号
-    var response = util.getJSON('https://raw.githubusercontent.com/tudou527/marketch/master/package.json');
-    //服务端新版本号
-    var remoteVersion = null;
+  var ctx = context;
+  var doc = context.document;
+  var I18N = util.I18N;
+  //插件路径
+  var pluginPath = [NSString stringWithFormat:@'%@', ctx.scriptPath.replace(/\/(\w*)\.cocoascript$/, '//')];
+  //从manifest.json中获取版本号
+  var manifestContent = [NSData dataWithContentsOfFile: [NSString stringWithFormat:@'%@manifest.json', pluginPath]];
+  var manifest = [NSJSONSerialization JSONObjectWithData:manifestContent options:nil error:nil];
+  //插件当前版本号
+  var currentVersion = null;
+  //插件当前版本号
+  var response = util.getJSON('https://raw.githubusercontent.com/tudou527/marketch/master/package.json');
+  //服务端新版本号
+  var remoteVersion = null;
 
-    if(response && response.version){
-        //插件当前版本号
-        currentVersion = util.convertVersion(manifest.version);
-        //服务端新版本号
-        remoteVersion = util.convertVersion(response.version);
-        
-        if (remoteVersion > currentVersion){
-            util.showTips({content: I18N.NEWVERSION.replace('{newversion}', response.version)});
-        }else{
-            util.showTips({content: ''+ manifest.version +' '+ I18N.LAETVERSION});
-        }
+  if(response && response.version){
+    //插件当前版本号
+    currentVersion = util.convertVersion(manifest.version);
+    //服务端新版本号
+    remoteVersion = util.convertVersion(response.version);
+
+    if (remoteVersion > currentVersion){
+      util.showTips({content: I18N.NEWVERSION.replace('{newversion}', response.version)});
     }else{
-        util.showTips({content: I18N.NETERROR});
+      util.showTips({content: ''+ manifest.version +' '+ I18N.LAETVERSION});
     }
+  }else{
+    util.showTips({content: I18N.NETERROR});
+  }
 }

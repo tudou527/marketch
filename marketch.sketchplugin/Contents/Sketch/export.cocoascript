@@ -8,525 +8,528 @@ var doc = null;
 var I18N = util.I18N;
 
 var Marketch = function(){
-    //图层zindex属性（新画板始终从1开始）
-    this.zIndex = 1;
-    //需要处理的所有画板
-    this.allArtboards = NSMutableArray.array();
-    //当前画板索引
-    this.index = 0;
-    //总画板数
-    this.maxIndex = 0;
-    //是否已打点
-    this.hasLog = false;
-    //队列（用于处理图层）
-    this.queue = {
-        //当前正在遍历的队列
-        current: [],
-        //遍历过程中新产生的group
-        next: []
-    }
-    //插件目录
-    this.pluginPath = [NSString stringWithFormat:@'%@', ctx.scriptPath.replace(/\/(\w*)\.cocoascript$/, '')];
-    //导出路径
-    this.exportPath = '';
-    //文件路径
-    this.tmpPath = {};
-    //当前sketch文件内所有画板图层数据
-    this.sketchData = {
-        //是否导出每个子图层
-        exportEveryLayer: false,
-        //sketch文件名
-        sketchName: '',
-        language: I18N.language,
-        //页面多语言
-        I18N: I18N['MarketchPreview'],
-        //页面id（为了保证页面显示顺序）
-        pageOrder: [],
-        //页面数据
-        pageData: {
-            /*pageId: {
-                id: '',
-                name: '',
-                //...
-                artboardId: []
-                },
-                //画板内的所有蒙版
-                mask: {
-                    maskLayerId: [maskChildLayerId]
-                }
-            }*/
+  //图层zindex属性（新画板始终从1开始）
+  this.zIndex = 1;
+  //需要处理的所有画板
+  this.allArtboards = NSMutableArray.array();
+  //当前画板索引
+  this.index = 0;
+  //总画板数
+  this.maxIndex = 0;
+  //是否已打点
+  this.hasLog = false;
+  //队列（用于处理图层）
+  this.queue = {
+    //当前正在遍历的队列
+    current: [],
+    //遍历过程中新产生的group
+    next: []
+  }
+  //插件目录
+  this.pluginPath = [NSString stringWithFormat:@'%@', ctx.scriptPath.replace(/\/(\w*)\.cocoascript$/, '')];
+  //导出路径
+  this.exportPath = '';
+  //文件路径
+  this.tmpPath = {};
+  //当前sketch文件内所有画板图层数据
+  this.sketchData = {
+    //是否导出每个子图层
+    exportEveryLayer: false,
+    //sketch文件名
+    sketchName: '',
+    language: I18N.language,
+    //页面多语言
+    I18N: I18N['MarketchPreview'],
+    //页面id（为了保证页面显示顺序）
+    pageOrder: [],
+    //页面数据
+    pageData: {
+      /*pageId: {
+        id: '',
+        name: '',
+        //...
+        artboardId: []
         },
-        //画板数据
-        artboard: {}
-    };
-    //保存被合并小图输出的图层父节点id
-    this.groupExportLayers = [];
-    //当前蒙版图层id
-    this.currentMaskLayerId = null;
-    //当前蒙版父图层id（用于向上遍历判断图层是否在蒙版内部）
-    this.currentMaskParentLayerId = null;
-    //当前处理的画板zindex
-    this.artboardZIndex = 0;
+        //画板内的所有蒙版
+        mask: {
+          maskLayerId: [maskChildLayerId]
+        }
+      }*/
+    },
+    //画板数据
+    artboard: {}
+  };
+  //保存被合并小图输出的图层父节点id
+  this.groupExportLayers = [];
+  //当前蒙版图层id
+  this.currentMaskLayerId = null;
+  //当前蒙版父图层id（用于向上遍历判断图层是否在蒙版内部）
+  this.currentMaskParentLayerId = null;
+  //当前处理的画板zindex
+  this.artboardZIndex = 0;
 }
 
 Marketch.prototype = {
-    /**
-     * @param expConfig.layer {boolean} 是否导出图层为图片
-     * @param expConfig.artboard {string} 导出画板选项: selected|page|all
-     * @param expConfig.saveSource {boolean} 是否保存sketch源文件
-     * @return 
-     */
-    run: function(expConfig){
-        var basePath = '';
-        var loopVar = null
-        var loopObj = null;
-
-        //初始化临时目录路径
-        this.initTmpPath();
-        //临时文件跟目录
-        basePath = this.tmpPath.basePath;
-        //预览需要根据是否导出图层为图片选项决定是否显示导出按钮
-        this.sketchData.exportEveryLayer = expConfig.layer;
-
-        //导出选中画板
-        if(expConfig.artboard == 'selected'){
-            loopObj = ctx.selection.objectEnumerator();
-            while(loopVar = loopObj.nextObject()){
-                if(loopVar.className() == 'MSArtboardGroup'){
-                    this.allArtboards.addObject(loopVar);
-                }
-            }
-        }
-
-        //导出当前页下全部画板
-        if(expConfig.artboard == 'page'){
-            this.allArtboards.addObjectsFromArray(doc.currentPage().artboards());
-        }
-
-        //导出所有画板
-        if(expConfig.artboard == 'all'){
-            loopObj = doc.pages().objectEnumerator();
-            while(loopVar = loopObj.nextObject()){
-                // 不导出以单个“-”开头的页面和画板
-                if(!/^-{1}[^-]*?.*$/.test(loopVar.name())){
-                    var artloops = loopVar.artboards().objectEnumerator();
-                    while(artboard = artloops.nextObject()){
-                        if(!/^-{1}[^-]*?.*$/.test(artboard.name())){
-                            this.allArtboards.addObject(artboard);
-                        }
-                    }
-                }
-            }
-        }
-
-        //画板不存在
-        if(this.allArtboards.count() == 0){
-            util.showTips({content:I18N.NOARTBOARD});
-            return false;
-        }
-
-        //复制当前sketch文件到临时文件目录
-        expConfig.saveSource && this.copySkethFile();
-
-        //处理画板
-        this.collectArtboard();
-
-        return this;
-    },
+  /**
+   * @param expConfig.layer {boolean} 是否导出图层为图片
+   * @param expConfig.artboard {string} 导出画板选项: selected|page|all
+   * @param expConfig.saveSource {boolean} 是否保存sketch源文件
+   * @return
+   */
+  run: function(expConfig){
+    var basePath = '';
+    var loopVar = null
+    var loopObj = null;
 
     //初始化临时目录路径
-    initTmpPath: function(){
-        //临时目录
-        var tmpPath = NSTemporaryDirectory();
-        var basePath = [tmpPath stringByAppendingPathComponent: @'com.sketch.cosa'];
-        var tmpFolder = new Date().getTime().toString();
-        var artboardFolder = [NSString stringWithFormat: @'%@/%@', basePath, tmpFolder];
-        var imagePath = '';
-        var dataPath = '';
+    this.initTmpPath();
+    //临时文件跟目录
+    basePath = this.tmpPath.basePath;
+    //预览需要根据是否导出图层为图片选项决定是否显示导出按钮
+    this.sketchData.exportEveryLayer = expConfig.layer;
 
-        //删除主目录（如果存在）
-        var result = [[NSFileManager alloc] removeItemAtPath:basePath error:nil];
-        //重新创建主目录
-        [[NSFileManager alloc] createDirectoryAtPath:basePath withIntermediateDirectories:nil attributes:nil error:nil]; 
-        //重新创建画板文件夹
-        [[NSFileManager alloc] createDirectoryAtPath:artboardFolder withIntermediateDirectories:nil attributes:nil error:nil]; 
-        //数据文件路径
-        dataPath = [artboardFolder stringByAppendingPathComponent: @'data.js'];
-        //html文件路径
-        htmlPath = [artboardFolder stringByAppendingPathComponent: @'index.html'];
-
-        this.tmpPath.zipPath = basePath;
-        //基础路径
-        this.tmpPath.basePath = artboardFolder;
-        //数据文件路径
-        this.tmpPath.dataPath = dataPath;
-        //html文件路径
-        this.tmpPath.htmlPath = htmlPath;
-    },
-
-    //复制当前sketch文件
-    copySkethFile: function(){
-        var basePath = this.tmpPath.basePath;
-        var sketchName = util.toJSString(doc.displayName());
-        //sketch源文件在临时目录中的保存路径
-        var savePath = '';
-        //sketch源文件所在路径
-        var sketchFilePath = doc.fileURL();
-
-        
-        if(!(/\.sketch$/.test(sketchName))){
-            sketchName += '.sketch';
+    //导出选中画板
+    if(expConfig.artboard == 'selected'){
+      loopObj = ctx.selection.objectEnumerator();
+      while(loopVar = loopObj.nextObject()){
+        if(loopVar.className() == 'MSArtboardGroup'){
+          this.allArtboards.addObject(loopVar);
         }
-
-        savePath = basePath +'/'+ sketchName;
-            
-        //如果sketch文件没有保存sketchFilePath会返回null就不需要复制sketch源文件了
-        if(sketchFilePath){
-            this.sketchData.sketchName = sketchName;
-            sketchFilePath = sketchFilePath.path();
-            [[NSFileManager defaultManager] copyPath:sketchFilePath toPath:savePath handler:nil];
-        }
-    }, 
-
-    //迭代处理画板
-    collectArtboard: function(){
-        //sketch所有文件数据
-        var sketchData = this.sketchData;
-        //当前页面Id
-        var activePageId = util.toJSString(doc.currentPage().objectID());
-        var theArtboard;
-        var loopArtboard = this.allArtboards.objectEnumerator();
-
-        //遍历所有画板
-        while(theArtboard = loopArtboard.nextObject()) {
-            //画板数据
-            var artboardData = {};
-            //画板id
-            var artboardId = util.toJSString(theArtboard.objectID());
-            //画板所在页面
-            var theArtPage = theArtboard.parentGroup();
-            //待处理的画板所在页面id
-            var theArtPageId = util.toJSString(theArtPage.objectID());
-            //画板目录
-            var artboardPath = NSString.stringWithFormat(@'%@/%@', this.tmpPath.basePath, artboardId);
-            //画板中的切片保存路径
-            var artboardSlicePath = artboardPath.stringByAppendingPathComponent('slice');
-
-            //待处理的画板所在页面不是当前页时激活画板所在的页面
-            if(activePageId != theArtPageId){
-                activePageId = theArtPageId;
-                doc.setCurrentPage(theArtboard.parentGroup());
-            }
-
-            //页面信息
-            if(!sketchData.pageData[theArtPageId]){
-                //不管用户如何选择都要导出页面数据
-                sketchData.pageData[theArtPageId] = {
-                    //页面唯一id
-                    pageId: theArtPageId,
-                    //页面名
-                    name: util.toJSString(theArtPage.name(), {encode: true, escapeLine:true}),
-                    //页面下画板id列表（保证显示的顺序）
-                    artboardId: []
-                }
-                //保存画板顺序
-                sketchData.pageOrder.push(theArtPageId);
-            }
-
-            //保存画板id
-            sketchData.pageData[theArtPageId].artboardId.push(artboardId);
-
-            //新建画板文件夹
-            [[NSFileManager defaultManager] createDirectoryAtPath:artboardPath withIntermediateDirectories:nil attributes:nil error:nil];
-            //在画板目录中创建slice图层文件夹
-            [[NSFileManager alloc] createDirectoryAtPath:artboardSlicePath withIntermediateDirectories:nil attributes:nil error:nil];
-            //导出画板
-            this.exportLayerAsImage(theArtboard, {name: 'artboard', path: artboardPath});
-            
-            //重置zindex
-            this.artboardZIndex = 0;
-
-            //处理画板&&图层数据
-            sketchData.artboard[artboardId] = this.getArtboardData({
-                artboard: theArtboard,
-                artboardPath: artboardPath
-            });
-        }
-
-        //TODO 处理蒙版
-        this.saveDataFile();
-        this.copyHtmlFile();
-    },
-
-    /**
-     * 处理画板&&图层数据
-     * @param obj.artboard 画板
-     * @return obj.artboardPath 画板保存路径
-     */
-    getArtboardData: function(obj){
-        var artboard = obj.artboard;
-        var exportLayerAsImage = this.sketchData.exportEveryLayer;
-        var theLayer = null;
-        //画板下的图层迭代器
-        var loopLayer = artboard.children().objectEnumerator();
-        //获取画板数据
-        var artboardData = util.getLayerData(artboard, {type: 'artboard', zIndex: this.artboardZIndex});
-        //导出选项
-        var exportConfig = {
-            //导出文件名（不包含扩展名）
-            name: '',
-            //导出路径
-            path: obj.artboardPath
-        }
-
-        //画板下的切片
-        artboardData.slice = [];
-        //画板下的图层
-        artboardData.layer = [];
-        //画板下的蒙版
-        artboardData.mask = {};
-
-        while(theLayer = loopLayer.nextObject()){
-            var layerSize = theLayer.frameInArtboard().size;
-            var layerId = util.toJSString(theLayer.objectID());
-            //图层父节点id
-            var parentGroupId = util.toJSString(theLayer.parentGroup().objectID());
-            var layerName = util.toJSString(theLayer.name());
-            var layerType = util.toJSString(theLayer.className());
-            var layerData = [];
-            //图层状态
-            var layerStates = this.isLayerEnable(theLayer);
-
-            exportConfig.name = layerId;
-
-            //图层不可见
-            if(!layerStates.isVisible){continue;}
-            //图层所在的组已经被作为图片导出过了
-            if(layerStates.hasExportByGroup){continue;}
-
-            if(layerStates.isMaskChildLayer && this.currentMaskLayerId){
-                artboardData.mask[this.currentMaskLayerId].push(layerId);
-            }else{
-                //清空当前mask标记
-                this.currentMaskLayerId = null;
-                this.currentMaskParentLayerId = null;
-            }
-
-            /*
-             * children方法会扁平化画板下的所有图层（没有层级关系）
-             * 如果某个图层为蒙版图层，则同一个文件夹内，其后出现的图层全部为该蒙版内的子图层
-             * 遍历到下一个图层后，需要逐级判断父图层是否与最近一次出现的蒙版图层（如有）有共同的“祖先”
-             * 存在共同的祖先，在导出图层为图片时始终只导出当前图层与蒙版图层的交集部分。
-             * 不存在共同的祖先时，则认为最近一次出现的蒙版作用范围失效，并清空最近一次出现的蒙版图层对象。
-             */
-            //某个图层为蒙版时，记录当前蒙版信息
-            if(theLayer.hasClippingMask()){
-                //保存当前蒙版图层信息
-                this.currentMaskLayerId = layerId;
-                this.currentMaskParentLayerId = parentGroupId;
-                //保存画板内蒙版数据
-                artboardData.mask[layerId] = [];
-            }
-
-            //小于64*64并且当前图层父节点区域内不包含文字图层时作为图片导出
-            if(this.groupExportEnable(theLayer)){
-                this.groupExportLayers.push(parentGroupId);
-                //保存图层数据
-                layerData = util.getLayerData(theLayer.parentGroup(), {type: 'bitmap', zIndex: this.artboardZIndex});
-                artboardData.layer.push(layerData);
-
-                //导出父图层
-                exportConfig.name = util.toJSString(theLayer.parentGroup().objectID());
-                exportLayerAsImage && this.exportLayerAsImage(theLayer.parentGroup(), exportConfig);
-            }else{
-                switch(layerType){
-                    case 'MSTextLayer':
-                        //保存文字图层数据
-                        layerData = util.getLayerData(theLayer, {type: 'text', zIndex: this.artboardZIndex});
-                        layerData && artboardData.layer.push(layerData);
-                        break;
-
-                    case 'MSSliceLayer':
-                        //保存切片图层数据
-                        layerData = util.getLayerData(theLayer, {type: 'slice', zIndex: this.artboardZIndex});
-                        layerData && artboardData.slice.push(layerData);
-                        //导出切片
-                        exportLayerAsImage && this.exportLayerAsImage(theLayer, {
-                            name: layerName,
-                            path: obj.artboardPath +'/slice'
-                        });
-                        break;
-
-                    case 'MSBitmapLayer':
-                        //保存位图数据
-                        layerData = util.getLayerData(theLayer, {type: 'bitmap', zIndex: this.artboardZIndex});
-                        layerData && artboardData.layer.push(layerData);
-                        //导出位图
-                        exportLayerAsImage && this.exportLayerAsImage(theLayer, exportConfig);
-                        break;
-
-                    case 'MSShapeGroup':
-                        //保存形状数据
-                        layerData = util.getLayerData(theLayer, {type: 'shape', zIndex: this.artboardZIndex});
-                        layerData && artboardData.layer.push(layerData);
-                        //导出形状组图片
-                        exportLayerAsImage && this.exportLayerAsImage(theLayer, exportConfig);
-                        break;
-                }
-            }
-
-            //递增zindex
-            this.artboardZIndex++;
-        }
-
-        return artboardData;
-    },
-
-    /*
-     * 判断图层是否可按组导出
-     * 64*64以内，并且不包含文字图层的图层可以按组导出
-     */
-    groupExportEnable: function(layer){
-        var frame = layer.frameInArtboard().size;
-        var parentLayer = layer.parentGroup();
-        //搜索条件
-        var predicate = NSPredicate.predicateWithFormat('className == "MSTextLayer"');
-        //当前图层组
-        var textLayers = parentLayer.children().filteredArrayUsingPredicate(predicate);
-
-        //图层尺寸小于64*64 并且不包含文字图层，
-        if(frame.width <= 64 && frame.height <= 64 && textLayers.count() == 0 && parentLayer.className() != 'MSArtboardGroup'){
-            return true;
-        }
-
-        return false;
-    },
-
-    /**
-     * 图层是否可用，以下类型的图层不可用:
-     * 1. 非可见图层、基本图形的子图形（比如：MSRectangleShape、MSShapePathLayer）
-     * 2. 图片所在的图层组已经作为图片导出过了（64*64以内的图层组会被按组导出）
-     */
-    isLayerEnable: function(layer){
-        //图层是否可见
-        var isVisible = true;
-        //图层是否已经被按组导出了
-        var hasExportByGroup = false;
-        //图层类名
-        var layerClass = (layer.className()).toString().toLowerCase();
-        //是否是蒙版子节点
-        var isMaskChildLayer = false;
-
-        //图形类名包括shape，但是不包括group关键字时表示这是一个基本图形，应该导出的是父图层
-        if(layerClass.indexOf('shape') > -1 && layerClass.indexOf('group') == -1){
-            //假装不可见，以便忽略
-            isVisible = false;
-            //return false;
-        }
-
-        //图层为文件夹或者画板时不用导出
-        if(layerClass == 'mslayergroup' || layerClass == 'msartboardgroup'){
-            //假装不可见，以便忽略
-            isVisible = false;
-            //return false;
-        }
-
-        //向上遍历
-        while(layer.className() != 'MSArtboardGroup'){
-            var theLayerId = util.toJSString(layer.objectID());
-            //parenggroup不可见
-            if(!layer.isVisible()){
-                isVisible = false;
-            }
-            //图层所在的父节点已经被导出为图片了
-            if(this.groupExportLayers.indexOf(theLayerId) != -1){
-                hasExportByGroup = true;
-            }
-            //判断图层蒙版
-            if(theLayerId == this.currentMaskParentLayerId){
-                isMaskChildLayer = true;
-            }
-
-            layer = layer.parentGroup();
-        }
-
-        return {
-            isVisible: isVisible,
-            hasExportByGroup: hasExportByGroup,
-            isMaskChildLayer: isMaskChildLayer
-        }
-    },
-
-    /*
-     * 导出图层为图片
-     * layer 需要导出的图层
-     * options.name 导出文件名
-     * options.path 导出路径
-     */
-    exportLayerAsImage: function(layer, options){
-        var slice;
-        var sliceRect = null;
-
-        /**
-         * absoluteInfluenceRect 虽然返回值数据类型为CGRect
-         * 但是某些情况下得到的坐标尺寸与实际有1px的误差
-         */
-        var absoluteRect = layer.absoluteRect();
-        //导出名
-        var exportName = options.path +'/'+ options.name;
-
-        sliceRect = NSMakeRect(absoluteRect.x(), absoluteRect.y(), absoluteRect.width(), absoluteRect.height());
-        slice = [[MSExportRequest exportRequestsFromExportableLayer:layer] firstObject];
-        //忘记为什么要copyLightweight
-        slice.page = doc.currentPage();//.copyLightweight();
-        slice.format = 'png';
-
-        if(options.name == 'artboard'){
-            //画板按2x导出
-            slice.scale = 2;
-            [doc saveArtboardOrSlice:slice toFile:exportName +'.png'];
-        }else{
-            // 0.5x
-            slice.scale = 0.5;
-            [doc saveArtboardOrSlice:slice toFile:exportName +'@0.5x.png'];
-
-            // 1x
-            slice.scale = 1;
-            [doc saveArtboardOrSlice:slice toFile:exportName +'@1x.png'];
-
-            // 2x
-            slice.scale = 2;
-            [doc saveArtboardOrSlice:slice toFile:exportName +'@2x.png'];
-
-            // 3x
-            slice.scale = 3;
-            [doc saveArtboardOrSlice:slice toFile:exportName +'@3x.png'];
-
-            if(/^svg/i.test(layer.name())){
-                slice = [[MSExportRequest exportRequestsFromExportableLayer:layer] firstObject];
-                slice.format = 'svg';
-                // 图层名以“svg”开头时，作为svg导出
-                [doc saveArtboardOrSlice:slice toFile:exportName +'.svg'];
-            }
-        }
-    },
-
-    //保存数据文件
-    saveDataFile: function(){
-        var jsonData = 'var pageData = '+ JSON.stringify(this.sketchData);
-        var content = [NSString stringWithCString:jsonData encoding:NSUTF8StringEncoding];
-        var dataPath = this.tmpPath.dataPath;
-
-        [content writeToFile:dataPath atomically:1 encoding:NSUTF8StringEncoding error:nil];
-    },
-
-    //保存html文件
-    copyHtmlFile: function(){
-        var basePath = this.tmpPath.basePath;
-        var pluginPath = this.pluginPath;
-        var saveHtmlPath = [basePath stringByAppendingPathComponent: @'index.html'];
-        var sourcePath = [pluginPath stringByAppendingPathComponent: @'index.html'];
-
-        [[NSFileManager defaultManager] copyPath:sourcePath toPath:saveHtmlPath handler:nil];
+      }
     }
+
+    //导出当前页下全部画板
+    if(expConfig.artboard == 'page'){
+      this.allArtboards.addObjectsFromArray(doc.currentPage().artboards());
+    }
+
+    //导出所有画板
+    if(expConfig.artboard == 'all'){
+      loopObj = doc.pages().objectEnumerator();
+
+      while(loopVar = loopObj.nextObject()){
+        // 不导出以单个“-”开头的页面和画板
+        if(!/^-{1}[^-]*?.*$/.test(loopVar.name())){
+          var artloops = loopVar.artboards().objectEnumerator();
+          while(artboard = artloops.nextObject()){
+            // 过滤掉Symbol
+            if(!/^-{1}[^-]*?.*$/.test(artboard.name()) && artboard.className() != 'MSSymbolMaster'){
+              this.allArtboards.addObject(artboard);
+            }
+          }
+        }
+      }
+    }
+
+    //画板不存在
+    if(this.allArtboards.count() == 0){
+      util.showTips({content:I18N.NOARTBOARD});
+      return false;
+    }
+
+    //复制当前sketch文件到临时文件目录
+    expConfig.saveSource && this.copySkethFile();
+
+    //处理画板
+    this.collectArtboard();
+
+    return this;
+  },
+
+  //初始化临时目录路径
+  initTmpPath: function(){
+    //临时目录
+    var tmpPath = NSTemporaryDirectory();
+    var basePath = [tmpPath stringByAppendingPathComponent: @'com.sketch.cosa'];
+    var tmpFolder = new Date().getTime().toString();
+    var artboardFolder = [NSString stringWithFormat: @'%@/%@', basePath, tmpFolder];
+    var imagePath = '';
+    var dataPath = '';
+
+    //删除主目录（如果存在）
+    var result = [[NSFileManager alloc] removeItemAtPath:basePath error:nil];
+    //重新创建主目录
+    [[NSFileManager alloc] createDirectoryAtPath:basePath withIntermediateDirectories:nil attributes:nil error:nil];
+    //重新创建画板文件夹
+    [[NSFileManager alloc] createDirectoryAtPath:artboardFolder withIntermediateDirectories:nil attributes:nil error:nil];
+    //数据文件路径
+    dataPath = [artboardFolder stringByAppendingPathComponent: @'data.js'];
+    //html文件路径
+    htmlPath = [artboardFolder stringByAppendingPathComponent: @'index.html'];
+
+    this.tmpPath.zipPath = basePath;
+    //基础路径
+    this.tmpPath.basePath = artboardFolder;
+    //数据文件路径
+    this.tmpPath.dataPath = dataPath;
+    //html文件路径
+    this.tmpPath.htmlPath = htmlPath;
+  },
+
+  //复制当前sketch文件
+  copySkethFile: function(){
+    var basePath = this.tmpPath.basePath;
+    var sketchName = util.toJSString(doc.displayName());
+    //sketch源文件在临时目录中的保存路径
+    var savePath = '';
+    //sketch源文件所在路径
+    var sketchFilePath = doc.fileURL();
+
+
+    if(!(/\.sketch$/.test(sketchName))){
+      sketchName += '.sketch';
+    }
+
+    savePath = basePath +'/'+ sketchName;
+
+    //如果sketch文件没有保存sketchFilePath会返回null就不需要复制sketch源文件了
+    if(sketchFilePath){
+      this.sketchData.sketchName = sketchName;
+      sketchFilePath = sketchFilePath.path();
+      [[NSFileManager defaultManager] copyPath:sketchFilePath toPath:savePath handler:nil];
+    }
+  },
+
+  //迭代处理画板
+  collectArtboard: function(){
+    //sketch所有文件数据
+    var sketchData = this.sketchData;
+    //当前页面Id
+    var activePageId = util.toJSString(doc.currentPage().objectID());
+    var theArtboard;
+    var loopArtboard = this.allArtboards.objectEnumerator();
+
+    //遍历所有画板
+    while(theArtboard = loopArtboard.nextObject()) {
+      //画板数据
+      var artboardData = {};
+      //画板id
+      var artboardId = util.toJSString(theArtboard.objectID());
+      //画板所在页面
+      var theArtPage = theArtboard.parentGroup();
+      //待处理的画板所在页面id
+      var theArtPageId = util.toJSString(theArtPage.objectID());
+      //画板目录
+      var artboardPath = NSString.stringWithFormat(@'%@/%@', this.tmpPath.basePath, artboardId);
+      //画板中的切片保存路径
+      var artboardSlicePath = artboardPath.stringByAppendingPathComponent('slice');
+
+      //待处理的画板所在页面不是当前页时激活画板所在的页面
+      if(activePageId != theArtPageId){
+        activePageId = theArtPageId;
+        doc.setCurrentPage(theArtboard.parentGroup());
+      }
+
+      //页面信息
+      if(!sketchData.pageData[theArtPageId]){
+        //不管用户如何选择都要导出页面数据
+        sketchData.pageData[theArtPageId] = {
+          //页面唯一id
+          pageId: theArtPageId,
+          //页面名
+          name: util.toJSString(theArtPage.name(), {encode: true, escapeLine:true}),
+          //页面下画板id列表（保证显示的顺序）
+          artboardId: []
+        }
+        //保存画板顺序
+        sketchData.pageOrder.push(theArtPageId);
+      }
+
+      //保存画板id
+      sketchData.pageData[theArtPageId].artboardId.push(artboardId);
+
+      //新建画板文件夹
+      [[NSFileManager defaultManager] createDirectoryAtPath:artboardPath withIntermediateDirectories:nil attributes:nil error:nil];
+      //在画板目录中创建slice图层文件夹
+      [[NSFileManager alloc] createDirectoryAtPath:artboardSlicePath withIntermediateDirectories:nil attributes:nil error:nil];
+      //导出画板
+      this.exportLayerAsImage(theArtboard, {name: 'artboard', path: artboardPath});
+
+      //重置zindex
+      this.artboardZIndex = 0;
+
+      //处理画板&&图层数据
+      sketchData.artboard[artboardId] = this.getArtboardData({
+        artboard: theArtboard,
+        artboardPath: artboardPath
+      });
+    }
+
+    //TODO 处理蒙版
+    this.saveDataFile();
+    this.copyHtmlFile();
+  },
+
+  /**
+   * 处理画板&&图层数据
+   * @param obj.artboard 画板
+   * @return obj.artboardPath 画板保存路径
+   */
+  getArtboardData: function(obj){
+    var artboard = obj.artboard;
+    var exportLayerAsImage = this.sketchData.exportEveryLayer;
+    var theLayer = null;
+    //画板下的图层迭代器
+    var loopLayer = artboard.children().objectEnumerator();
+    //获取画板数据
+    var artboardData = util.getLayerData(artboard, {type: 'artboard', zIndex: this.artboardZIndex});
+    //导出选项
+    var exportConfig = {
+      //导出文件名（不包含扩展名）
+      name: '',
+      //导出路径
+      path: obj.artboardPath
+    }
+
+    //画板下的切片
+    artboardData.slice = [];
+    //画板下的图层
+    artboardData.layer = [];
+    //画板下的蒙版
+    artboardData.mask = {};
+
+    while(theLayer = loopLayer.nextObject()){
+      var layerSize = theLayer.frameInArtboard().size;
+      var layerId = util.toJSString(theLayer.objectID());
+      //图层父节点id
+      var parentGroupId = util.toJSString(theLayer.parentGroup().objectID());
+      var layerName = util.toJSString(theLayer.name());
+      var layerType = util.toJSString(theLayer.className());
+      var layerData = [];
+      //图层状态
+      var layerStates = this.isLayerEnable(theLayer);
+
+      exportConfig.name = layerId;
+
+      //图层不可见
+      if(!layerStates.isVisible){continue;}
+      //图层所在的组已经被作为图片导出过了
+      if(layerStates.hasExportByGroup){continue;}
+
+      if(layerStates.isMaskChildLayer && this.currentMaskLayerId){
+        artboardData.mask[this.currentMaskLayerId].push(layerId);
+      }else{
+        //清空当前mask标记
+        this.currentMaskLayerId = null;
+        this.currentMaskParentLayerId = null;
+      }
+
+      /*
+       * children方法会扁平化画板下的所有图层（没有层级关系）
+       * 如果某个图层为蒙版图层，则同一个文件夹内，其后出现的图层全部为该蒙版内的子图层
+       * 遍历到下一个图层后，需要逐级判断父图层是否与最近一次出现的蒙版图层（如有）有共同的“祖先”
+       * 存在共同的祖先，在导出图层为图片时始终只导出当前图层与蒙版图层的交集部分。
+       * 不存在共同的祖先时，则认为最近一次出现的蒙版作用范围失效，并清空最近一次出现的蒙版图层对象。
+       */
+      //某个图层为蒙版时，记录当前蒙版信息
+      if(theLayer.hasClippingMask()){
+        //保存当前蒙版图层信息
+        this.currentMaskLayerId = layerId;
+        this.currentMaskParentLayerId = parentGroupId;
+        //保存画板内蒙版数据
+        artboardData.mask[layerId] = [];
+      }
+
+      //小于64*64并且当前图层父节点区域内不包含文字图层时作为图片导出
+      if(this.groupExportEnable(theLayer)){
+        this.groupExportLayers.push(parentGroupId);
+        //保存图层数据
+        layerData = util.getLayerData(theLayer.parentGroup(), {type: 'bitmap', zIndex: this.artboardZIndex});
+        artboardData.layer.push(layerData);
+
+        //导出父图层
+        exportConfig.name = util.toJSString(theLayer.parentGroup().objectID());
+        exportLayerAsImage && this.exportLayerAsImage(theLayer.parentGroup(), exportConfig);
+      }else{
+        switch(layerType){
+          case 'MSTextLayer':
+            //保存文字图层数据
+            layerData = util.getLayerData(theLayer, {type: 'text', zIndex: this.artboardZIndex});
+            layerData && artboardData.layer.push(layerData);
+            break;
+
+          case 'MSSliceLayer':
+            //保存切片图层数据
+            layerData = util.getLayerData(theLayer, {type: 'slice', zIndex: this.artboardZIndex});
+            layerData && artboardData.slice.push(layerData);
+            //导出切片
+            exportLayerAsImage && this.exportLayerAsImage(theLayer, {
+              name: layerName,
+              path: obj.artboardPath +'/slice'
+            });
+            break;
+
+          case 'MSBitmapLayer':
+            //保存位图数据
+            layerData = util.getLayerData(theLayer, {type: 'bitmap', zIndex: this.artboardZIndex});
+            layerData && artboardData.layer.push(layerData);
+            //导出位图
+            exportLayerAsImage && this.exportLayerAsImage(theLayer, exportConfig);
+            break;
+
+          case 'MSShapeGroup':
+            //保存形状数据
+            layerData = util.getLayerData(theLayer, {type: 'shape', zIndex: this.artboardZIndex});
+            layerData && artboardData.layer.push(layerData);
+            //导出形状组图片
+            exportLayerAsImage && this.exportLayerAsImage(theLayer, exportConfig);
+            break;
+        }
+      }
+
+      //递增zindex
+      this.artboardZIndex++;
+    }
+
+    return artboardData;
+  },
+
+  /*
+   * 判断图层是否可按组导出
+   * 64*64以内，并且不包含文字图层的图层可以按组导出
+   */
+  groupExportEnable: function(layer){
+    var frame = layer.frameInArtboard().size;
+    var parentLayer = layer.parentGroup();
+    //搜索条件
+    var predicate = NSPredicate.predicateWithFormat('className == "MSTextLayer"');
+    //当前图层组
+    var textLayers = parentLayer.children().filteredArrayUsingPredicate(predicate);
+
+    //图层尺寸小于64*64 并且不包含文字图层，
+    if(frame.width <= 64 && frame.height <= 64 && textLayers.count() == 0 && parentLayer.className() != 'MSArtboardGroup'){
+      return true;
+    }
+
+    return false;
+  },
+
+  /**
+   * 图层是否可用，以下类型的图层不可用:
+   * 1. 非可见图层、基本图形的子图形（比如：MSRectangleShape、MSShapePathLayer）
+   * 2. 图片所在的图层组已经作为图片导出过了（64*64以内的图层组会被按组导出）
+   */
+  isLayerEnable: function(layer){
+    //图层是否可见
+    var isVisible = true;
+    //图层是否已经被按组导出了
+    var hasExportByGroup = false;
+
+    //图层类名
+    var layerClass = (layer.className()).toString().toLowerCase();
+    //是否是蒙版子节点
+    var isMaskChildLayer = false;
+
+    //图形类名包括shape，但是不包括group关键字时表示这是一个基本图形，应该导出的是父图层
+    if(layerClass.indexOf('shape') > -1 && layerClass.indexOf('group') == -1){
+      //假装不可见，以便忽略
+      isVisible = false;
+      //return false;
+    }
+
+    //图层为文件夹或者画板时不用导出
+    if(layerClass == 'mslayergroup' || layerClass == 'msartboardgroup'){
+      //假装不可见，以便忽略
+      isVisible = false;
+      //return false;
+    }
+
+    //向上遍历
+    while(layer.className() != 'MSArtboardGroup'){
+      var theLayerId = util.toJSString(layer.objectID());
+      //parenggroup不可见
+      if(!layer.isVisible()){
+        isVisible = false;
+      }
+      //图层所在的父节点已经被导出为图片了
+      if(this.groupExportLayers.indexOf(theLayerId) != -1){
+        hasExportByGroup = true;
+      }
+      //判断图层蒙版
+      if(theLayerId == this.currentMaskParentLayerId){
+        isMaskChildLayer = true;
+      }
+
+      layer = layer.parentGroup();
+    }
+
+    return {
+      isVisible: isVisible,
+      hasExportByGroup: hasExportByGroup,
+      isMaskChildLayer: isMaskChildLayer
+    }
+  },
+
+  /*
+   * 导出图层为图片
+   * layer 需要导出的图层
+   * options.name 导出文件名
+   * options.path 导出路径
+   */
+  exportLayerAsImage: function(layer, options){
+    var slice;
+    var sliceRect = null;
+
+    /**
+     * absoluteInfluenceRect 虽然返回值数据类型为CGRect
+     * 但是某些情况下得到的坐标尺寸与实际有1px的误差
+     */
+    var absoluteRect = layer.absoluteRect();
+    //导出名
+    var exportName = options.path +'/'+ options.name;
+
+    sliceRect = NSMakeRect(absoluteRect.x(), absoluteRect.y(), absoluteRect.width(), absoluteRect.height());
+    slice = [[MSExportRequest exportRequestsFromExportableLayer:layer] firstObject];
+    //忘记为什么要copyLightweight
+    slice.page = doc.currentPage();//.copyLightweight();
+    slice.format = 'png';
+
+    if(options.name == 'artboard'){
+      //画板按2x导出
+      slice.scale = 2;
+      [doc saveArtboardOrSlice:slice toFile:exportName +'.png'];
+    }else{
+      // 0.5x
+      slice.scale = 0.5;
+      [doc saveArtboardOrSlice:slice toFile:exportName +'@0.5x.png'];
+
+      // 1x
+      slice.scale = 1;
+      [doc saveArtboardOrSlice:slice toFile:exportName +'@1x.png'];
+
+      // 2x
+      slice.scale = 2;
+      [doc saveArtboardOrSlice:slice toFile:exportName +'@2x.png'];
+
+      // 3x
+      slice.scale = 3;
+      [doc saveArtboardOrSlice:slice toFile:exportName +'@3x.png'];
+
+      if(/^svg/i.test(layer.name())){
+          slice = [[MSExportRequest exportRequestsFromExportableLayer:layer] firstObject];
+          slice.format = 'svg';
+          // 图层名以“svg”开头时，作为svg导出
+          [doc saveArtboardOrSlice:slice toFile:exportName +'.svg'];
+      }
+    }
+  },
+
+  //保存数据文件
+  saveDataFile: function(){
+    var jsonData = 'var pageData = '+ JSON.stringify(this.sketchData);
+    var content = [NSString stringWithCString:jsonData encoding:NSUTF8StringEncoding];
+    var dataPath = this.tmpPath.dataPath;
+
+    [content writeToFile:dataPath atomically:1 encoding:NSUTF8StringEncoding error:nil];
+  },
+
+  //保存html文件
+  copyHtmlFile: function(){
+    var basePath = this.tmpPath.basePath;
+    var pluginPath = this.pluginPath;
+    var saveHtmlPath = [basePath stringByAppendingPathComponent: @'index.html'];
+    var sourcePath = [pluginPath stringByAppendingPathComponent: @'index.html'];
+
+    [[NSFileManager defaultManager] copyPath:sourcePath toPath:saveHtmlPath handler:nil];
+  }
 }
