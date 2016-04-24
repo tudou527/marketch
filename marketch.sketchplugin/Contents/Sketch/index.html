@@ -154,12 +154,19 @@ input[type=text], textarea {outline:0;padding:3px;}
         .pa-block dt em {position:absolute;opacity: 0;top:5px;right:0;padding:0 10px 0 0;background-color: #20E8B4; line-height: 1; font-size: 10px; color: #076B51; padding: 2px 5px; border-radius: 2px;transition: opacity .2s ease-out; -webkit-transition: opacity .2s ease-out;}
         .copy-success dt em {opacity: 1}
       .pa-block dd {}
-        .pa-block textarea {padding:10px;border-radius:3px;width:174px;height:19px;border:0;color:#b3b8bd;background:#434950;resize:none;overflow-y:scroll;font-size:11px;font-family:monospace,Consolas;}
+        .pa-block textarea {padding:10px;border-radius:3px;width:180px;height:19px;border:0;color:#b3b8bd;background:#434950;resize:none;overflow-y:scroll;font-size:11px;font-family:monospace,Consolas;}
 
     /* 填充 */
     .pa-fill {}
       .pa-fill dt {width:auto;}
       .pa-fill dd p {width:auto;padding:5px 3px;}
+
+    /* symbol */
+    .pa-symbol {background:#434950;cursor:pointer;overflow:hidden;}
+      .pa-symbol dd {height:35px;overflow:hidden;}
+        .pa-symbol span {float:left;margin:10px 0 0 8px;width:80px;height:15px;overflow:hidden;}
+          .pa-symbol span img {display:block;}
+        .pa-symbol em {float:left;text-indent:10px;line-height:35px;width:105px;text-overflow:ellipsis;overflow:hidden;}
 
     /* 导出 */
     .pa-export {overflow:hidden;}
@@ -250,6 +257,8 @@ var Marketch = function(obj){
   this.language = obj.sketchData.language;
   //多语言
   this.I18N = obj.sketchData.I18N;
+  //Symbols
+  this.symbols = {};
   //创建dom(替换I18N)
   this.setup();
 };
@@ -450,6 +459,10 @@ Marketch.prototype = {
       for(var i=data.artboardId.length-1; i>=0; i--){
         var artboardId = data.artboardId[i];
         var artboradData = self.sketchData.artboard[artboardId];
+
+        if(artboradData.symbolId){
+          self.symbols[artboradData.symbolId] = artboradData;
+        }
         pageListHtml.push(
           '<li data-ab="'+ artboradData.id +'"><h3 title="' + self.decode(artboradData.name) + '">'+ self.decode(artboradData.name) +'</h3></li>'
         );
@@ -511,7 +524,6 @@ Marketch.prototype = {
         self.selectedLayer();
         self.showPanel();
       }
-
     }).children().first().click();
   },
 
@@ -548,25 +560,31 @@ Marketch.prototype = {
         var layerWidth = layer.width;
         var layerHeight = layer.height;
 
-        if(layer.borderWidth){
-          layerWidth += layer.borderWidth * 2;
-          layerHeight += layer.borderWidth * 2;
-        }
-
         self.currentAbData[layer.id] = layer;
 
-        //位置和尺寸都要像左上方移动1px，避免测量准确的问题
-        artHtml.push(
-          '<div class="art-layer" id="', layer.id ,'" style="',
-            'position:absolute;top:', (layer.y - baseY) ,'px;',
-            'z-index:', layer.zIndex , ';',
-            'left:', (layer.x - baseX) ,'px;',
-            'width: ', layerWidth, 'px;',
-            'height: ', layerHeight, 'px;',
-          '" name="', self.decode(layer.name) ,'">',
-            //layer.html,
-          '</div>'
-        );
+        if(layer.symbolId){
+          artHtml.push(
+            self.buildSymbolArtboard(layer, (layer.x - baseX), (layer.y - baseY))
+          );
+        }else{
+          if(layer.borderWidth){
+            layerWidth += layer.borderWidth * 2;
+            layerHeight += layer.borderWidth * 2;
+          }
+
+          //位置和尺寸都要像左上方移动1px，避免测量准确的问题
+          artHtml.push(
+            '<div class="art-layer" id="', layer.id ,'" style="',
+              'position:absolute;top:', (layer.y - baseY) ,'px;',
+              'z-index:', layer.zIndex , ';',
+              'left:', (layer.x - baseX) ,'px;',
+              'width: ', layerWidth, 'px;',
+              'height: ', layerHeight, 'px;',
+            '" name="', self.decode(layer.name) ,'">',
+              //layer.html,
+            '</div>'
+          );
+        }
       });
 
       //slice图层
@@ -607,6 +625,49 @@ Marketch.prototype = {
     targetEl.addClass('wrap-layer-active');
 
     $('#wrap').css({width: targetEl.width() + 220}).parent().scrollLeft(0);
+  },
+
+  buildSymbolArtboard: function(symbolLayer, symbolX, symbolY){
+    var self = this;
+    var symbolData = self.symbols[symbolLayer.symbolId];
+    var artHtml = [];
+    var baseX = symbolData.x;
+    var baseY = symbolData.y;
+
+    $.each(symbolData.layer, function(index, layer){
+      var x = layer.x;
+      var y = layer.y;
+      var layerWidth = layer.width;
+      var layerHeight = layer.height;
+
+      self.currentAbData[layer.id] = layer;
+
+      if(layer.symbolId){
+        artHtml.push(
+          self.buildSymbolArtboard(layer, (layer.x - baseX), (layer.y - baseY))
+        );
+      }else{
+        if(layer.borderWidth){
+          layerWidth += layer.borderWidth * 2;
+          layerHeight += layer.borderWidth * 2;
+        }
+
+        //位置和尺寸都要像左上方移动1px，避免测量准确的问题
+        artHtml.push(
+          '<div class="art-layer" id="', layer.id ,'" style="',
+            'position:absolute;top:', (layer.y - baseY + symbolY) ,'px;',
+            'z-index:', layer.zIndex , ';',
+            'left:', (layer.x - baseX + symbolX) ,'px;',
+            'width: ', layerWidth, 'px;',
+            'height: ', layerHeight, 'px;',
+          '" name="', self.decode(layer.name) ,'">',
+            //layer.html,
+          '</div>'
+        );
+      }
+    });
+
+    return artHtml.join('');
   },
 
   /**
@@ -771,6 +832,16 @@ Marketch.prototype = {
           el.parents('dl').removeClass('copy-success');
         }, 1000);
       }
+
+      if(el.parents('.pa-symbol').size() > 0){
+        var symbolId = el.parents('.pa-symbol').data('symbolid');
+        var symbolData = self.symbols[symbolId];
+
+        if($('#aside li[data-ab='+ symbolData.id +']')){
+          var theNav = $('#aside li[data-ab='+ symbolData.id +']');
+          theNav.find('h3').click();
+        }
+      }
     })
 
     $('body').on('click', function(e) {
@@ -911,6 +982,18 @@ Marketch.prototype = {
           '<dt><span>', this.I18N['CODE'] ,'</span><em>', this.I18N['COPYSUCCESS'] ,'</em></dt>',
           '<dd>',
             '<textarea name="code">', this.formatStyle(layerData.style) ,'</textarea>',
+          '</dd>',
+        '</dl>'
+      )
+    }
+
+    if(layerData.symbolId){
+      var symbolData = this.symbols[layerData.symbolId];
+      html.push(
+        '<dl class="pa-block pa-symbol" data-symbolid="', layerData.symbolId ,'">',
+          '<dd>',
+            '<span><img height="15" src="', symbolData.id, '/artboard.png" /></span>',
+            '<em>', symbolData.name, '</em>',
           '</dd>',
         '</dl>'
       )

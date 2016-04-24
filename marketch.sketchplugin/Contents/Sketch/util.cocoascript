@@ -393,7 +393,16 @@ var util = {
     }
 
     //对于画板、slice、位图只需要返回基本数据
-    if(config.type == 'artboard' || config.type == 'slice' || config.type == 'bitmap'){
+    if(config.type == 'artboard' || config.type == 'slice' || config.type == 'bitmap' || config.type == 'symbol'){
+      if(config.type == 'artboard' && layer.className() == 'MSSymbolMaster'){
+        // 画板为Symbol时设置SymbolId
+        layerData.symbolId = util.toJSString(layer.symbolID());
+      }
+
+      if(config.type == 'symbol'){
+        layerData.symbolId = util.toJSString(layer.symbolID());
+      }
+
       return layerData;
     }
 
@@ -417,13 +426,15 @@ var util = {
       }
 
       /**
-       * 修正文字图层高度
-       * 1. 行高存在时取行高
-       * 2. 行高不存在时
-       *
+       * 修正单行文字图层高度
+       * 行高未设置，并且高度与字号相差2px以上时候重新设置高度
        */
-      //console.log(/[\r\n]/gi.test(layer.stringValue()));
-      //console.log(layerFrame.size.height +"|"+ layerData.style['line-height'] +"|"+ layerData.style['font-size'] +"|"+ layer.stringValue());
+      if(!/[\r\n]/gi.test(layer.stringValue()) && layerData.style['line-height'] === undefined){
+        var fontSize = parseInt(layerData.style['font-size'], 10);
+        if(layerData.height - fontSize > 2){
+          layerData.height = fontSize + 2;
+        }
+      }
 
       if(textAlign){
         layerData.style['text-align'] = textAlign;
