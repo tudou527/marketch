@@ -445,30 +445,50 @@ Marketch.prototype = {
 
     $.each(self.sketchData.pageOrder, function(index, pageId){
       var data = self.sketchData.pageData[pageId];
+      var title = self.decode(data.name);
+      var artboardCount = 0;
 
       pageListHtml.push(
-        '<li data-page="'+ data.pageId +'"><h2 class="more" title="' + self.decode(data.name) + '"><span>'+ self.decode(data.name) + '</span></h2>'
+        '<li data-page="'+ data.pageId +'">'
       );
 
       if(index == 0){
         currentPageId = data.pageId;
       }
 
-      pageListHtml.push('<ul class="ab-list">');
-
       for(var i=data.artboardId.length-1; i>=0; i--){
         var artboardId = data.artboardId[i];
         var artboradData = self.sketchData.artboard[artboardId];
+        var artboardName = self.decode(artboradData.name);
 
         if(artboradData.symbolId){
           self.symbols[artboradData.symbolId] = artboradData;
         }
-        pageListHtml.push(
-          '<li data-ab="'+ artboradData.id +'"><h3 title="' + self.decode(artboradData.name) + '">'+ self.decode(artboradData.name) +'</h3></li>'
-        );
+
+        if(!/^-{1}[^-]*?.*$/.test(artboardName)){
+          artboardCount++;
+        }
       }
 
-      pageListHtml.push('</ul></li>');
+      if(artboardCount > 0){
+        pageListHtml.push('<h2 class="more" title="' + title + '"><span>'+ title + '</span></h2><ul class="ab-list">');
+
+        for(var i=data.artboardId.length-1; i>=0; i--){
+          var artboardId = data.artboardId[i];
+          var artboradData = self.sketchData.artboard[artboardId];
+          var artboardName = self.decode(artboradData.name);
+
+          if(!/^-{1}[^-]*?.*$/.test(artboardName)){
+            artboardCount++;
+
+            pageListHtml.push(
+              '<li data-ab="'+ artboradData.id +'"><h3 title="' + artboardName + '">'+ artboardName +'</h3></li>'
+            );
+          }
+        }
+
+        pageListHtml.push('</ul></li>');
+      }
     });
 
     pageListHtml.push('</ul>');
@@ -631,10 +651,10 @@ Marketch.prototype = {
     var self = this;
     var symbolData = self.symbols[symbolLayer.symbolId];
     var artHtml = [];
-    var baseX = symbolData.x;
-    var baseY = symbolData.y;
+    var baseX = symbolData && symbolData.x;
+    var baseY = symbolData && symbolData.y;
 
-    $.each(symbolData.layer, function(index, layer){
+    symbolData && $.each(symbolData.layer, function(index, layer){
       var x = layer.x;
       var y = layer.y;
       var layerWidth = layer.width;
@@ -1039,9 +1059,9 @@ Marketch.prototype = {
       var height = this.scrollHeight;
       var width = this.scrollWidth;
 
-      if(height <= 25){
+      if(height <= 39){
         if(width > 175){
-          $(this).css({height: 23});
+          $(this).css({height: 19});
         }
       }else if(height > 25 && height < 120){
         $(this).css({height: height});

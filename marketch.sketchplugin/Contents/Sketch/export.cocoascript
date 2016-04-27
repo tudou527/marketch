@@ -112,8 +112,8 @@ Marketch.prototype = {
         if(!/^-{1}[^-]*?.*$/.test(loopVar.name())){
           var artloops = loopVar.artboards().objectEnumerator();
           while(artboard = artloops.nextObject()){
-            // 过滤掉Symbol
-            if(!/^-{1}[^-]*?.*$/.test(artboard.name())){
+            // 前缀为 - 并且不为symbol的图层才不导出
+            if(!/^-{1}[^-]*?.*$/.test(artboard.name()) || artboard.className() == 'MSSymbolMaster'){
               this.allArtboards.addObject(artboard);
             }
           }
