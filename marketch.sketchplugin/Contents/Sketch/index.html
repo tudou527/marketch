@@ -826,16 +826,20 @@ Marketch.prototype = {
         if(type == 'size' || type == 'format'){
           //修改导出图片路径
           var base = $('#export-btn').data('base');
+          var baseName = $('#export-btn').data('name');
           var exportScale = $('#panel').find('select[name=size]').val();
           var exportType = $('#panel').find('select[name=format]').val();
           var link = ''
+          var name = ''
 
           if(exportType == 'svg'){
             link = base +'.svg';
+            name = baseName + '.svg';
           }else{
             link = base +'@'+ exportScale +'.png';
+            name = baseName +'@'+ exportScale +'.png';
           }
-          $('#export-btn').attr('href', link).attr('download', link);
+          $('#export-btn').attr('href', link).attr('download', name);
         }
       }
     }).on('click', function(e){
@@ -1046,7 +1050,7 @@ Marketch.prototype = {
             '</ul>',
             '<div class="export-btn">',
               '<a id="export-btn" href="javascript:;" data-base="', this.currentArtboardId ,'/', objectId ,'" ',
-              'class="panel-export" download="">', this.I18N['EXPORTLAYER'] ,'</a>',
+              'class="panel-export" download="" data-name="', layerData.name ,'">', this.I18N['EXPORTLAYER'] ,'</a>',
             '</div>',
           '</dd>',
         '</dl>'
