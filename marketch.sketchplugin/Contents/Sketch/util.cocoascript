@@ -351,6 +351,7 @@ var util = {
       //图层路径默认与图层id一致
       src: layerId,
       name: util.toJSString(layer.name(), nameConfig),
+      type: util.toJSString(layer.className()),
       x: Math.ceil(layerFrame.origin.x),
       y: Math.ceil(layerFrame.origin.y),
       zIndex: config.zIndex,

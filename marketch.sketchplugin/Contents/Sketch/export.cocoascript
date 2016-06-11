@@ -88,6 +88,18 @@ Marketch.prototype = {
     //预览需要根据是否导出图层为图片选项决定是否显示导出按钮
     this.sketchData.exportEveryLayer = expConfig.layer;
 
+    //从所有画板中过滤出symbol
+    loopObj = doc.pages().objectEnumerator();
+    while(loopVar = loopObj.nextObject()){
+      var artloops = loopVar.artboards().objectEnumerator();
+      while(artboard = artloops.nextObject()){
+        // 不导出前缀为 - 且不为 symbol 的图层
+        if(artboard.className() == 'MSSymbolMaster'){
+          this.allArtboards.addObject(artboard);
+        }
+      }
+    }
+
     //导出选中画板
     if(expConfig.artboard == 'selected'){
       loopObj = ctx.selection.objectEnumerator();
@@ -100,20 +112,24 @@ Marketch.prototype = {
 
     //导出当前页下全部画板
     if(expConfig.artboard == 'page'){
-      this.allArtboards.addObjectsFromArray(doc.currentPage().artboards());
+      loopObj = doc.currentPage().artboards().objectEnumerator();
+      while(loopVar = loopObj.nextObject()){
+        if(loopVar.className() == 'MSArtboardGroup'){
+          this.allArtboards.addObject(loopVar);
+        }
+      }
     }
 
-    //导出所有画板
+    //导出全部画板
     if(expConfig.artboard == 'all'){
       loopObj = doc.pages().objectEnumerator();
 
       while(loopVar = loopObj.nextObject()){
-        // 不导出以单个“-”开头的页面和画板
+        // 不导出以“-”开头的页面
         if(!/^-{1}[^-]*?.*$/.test(loopVar.name())){
           var artloops = loopVar.artboards().objectEnumerator();
           while(artboard = artloops.nextObject()){
-            // 前缀为 - 并且不为symbol的图层才不导出
-            if(!/^-{1}[^-]*?.*$/.test(artboard.name()) || artboard.className() == 'MSSymbolMaster'){
+            if(artboard.className() == 'MSArtboardGroup' && !/^-{1}[^-]*?.*$/.test(artboard.name())){
               this.allArtboards.addObject(artboard);
             }
           }
@@ -294,9 +310,9 @@ Marketch.prototype = {
       //图层父节点id
       var parentGroupId = util.toJSString(theLayer.parentGroup().objectID());
       var layerName = util.toJSString(theLayer.name());
-      var layerType = util.toJSString(theLayer.className());
+      var layerType = util.toJSString(theLayer.class());
       var layerData = [];
-      //图层状态
+
       var layerStates = this.isLayerEnable(theLayer);
 
       exportConfig.name = layerId;
