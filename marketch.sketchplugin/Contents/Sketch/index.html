@@ -448,46 +448,48 @@ Marketch.prototype = {
       var title = self.decode(data.name);
       var artboardCount = 0;
 
-      pageListHtml.push(
-        '<li data-page="'+ data.pageId +'">'
-      );
+      if(!/^-{1}[^-]*?.*$/.test(title)){
+        pageListHtml.push(
+          '<li data-page="'+ data.pageId +'">'
+        );
 
-      if(index == 0){
-        currentPageId = data.pageId;
-      }
-
-      for(var i=data.artboardId.length-1; i>=0; i--){
-        var artboardId = data.artboardId[i];
-        var artboradData = self.sketchData.artboard[artboardId];
-        var artboardName = self.decode(artboradData.name);
-
-        if(artboradData.symbolId){
-          self.symbols[artboradData.symbolId] = artboradData;
+        if(index == 0){
+          currentPageId = data.pageId;
         }
-
-        if(!/^-{1}[^-]*?.*$/.test(artboardName)){
-          artboardCount++;
-        }
-      }
-
-      if(artboardCount > 0){
-        pageListHtml.push('<h2 class="more" title="' + title + '"><span>'+ title + '</span></h2><ul class="ab-list">');
 
         for(var i=data.artboardId.length-1; i>=0; i--){
           var artboardId = data.artboardId[i];
           var artboradData = self.sketchData.artboard[artboardId];
           var artboardName = self.decode(artboradData.name);
 
+          if(artboradData.symbolId){
+            self.symbols[artboradData.symbolId] = artboradData;
+          }
+
           if(!/^-{1}[^-]*?.*$/.test(artboardName)){
             artboardCount++;
-
-            pageListHtml.push(
-              '<li data-ab="'+ artboradData.id +'"><h3 title="' + artboardName + '">'+ artboardName +'</h3></li>'
-            );
           }
         }
 
-        pageListHtml.push('</ul></li>');
+        if(artboardCount > 0){
+          pageListHtml.push('<h2 class="more" title="' + title + '"><span>'+ title + '</span></h2><ul class="ab-list">');
+
+          for(var i=data.artboardId.length-1; i>=0; i--){
+            var artboardId = data.artboardId[i];
+            var artboradData = self.sketchData.artboard[artboardId];
+            var artboardName = self.decode(artboradData.name);
+
+            if(!/^-{1}[^-]*?.*$/.test(artboardName)){
+              artboardCount++;
+
+              pageListHtml.push(
+                '<li data-ab="'+ artboradData.id +'"><h3 title="' + artboardName + '">'+ artboardName +'</h3></li>'
+              );
+            }
+          }
+
+          pageListHtml.push('</ul></li>');
+        }
       }
     });
 
