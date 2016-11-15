@@ -342,7 +342,8 @@ var util = {
    */
   getLayerData: function(layer, config){
     //图层在画板中的位置、尺寸：frameInArtboard
-    var layerFrame = layer.frameInArtboard();
+    //Sketch 41 Fix: frameInArtboard() = > frame()
+    var layerFrame = layer.frame();
     var layerId = util.toJSString(layer.objectID());
     var nameConfig = (config.type == 'artboard') ? {encode: true, escapeLine:true} : {encode: true};
     //图层基本信息
@@ -352,11 +353,11 @@ var util = {
       src: layerId,
       name: util.toJSString(layer.name(), nameConfig),
       type: util.toJSString(layer.className()),
-      x: Math.ceil(layerFrame.origin.x),
-      y: Math.ceil(layerFrame.origin.y),
+      x: Math.ceil(layer.absoluteRect().x()),//Sketch 41 Fix: origin.x = > absoluteRect().x()
+      y: Math.ceil(layer.absoluteRect().y()),//Sketch 41 Fix: origin.y = > absoluteRect().y()
       zIndex: config.zIndex,
-      width: Math.ceil(layerFrame.size.width),
-      height: Math.ceil(layerFrame.size.height),
+      width: Math.ceil(layerFrame.width()),
+      height: Math.ceil(layerFrame.height()),
       sharedStyleType: '',
       sharedStyle: ''
     };
@@ -392,7 +393,6 @@ var util = {
         }
       }
     }
-
     //对于画板、slice、位图只需要返回基本数据
     if(config.type == 'artboard' || config.type == 'slice' || config.type == 'bitmap' || config.type == 'symbol'){
       if(config.type == 'artboard' && layer.className() == 'MSSymbolMaster'){
