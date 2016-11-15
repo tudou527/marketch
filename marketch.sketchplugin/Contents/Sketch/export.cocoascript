@@ -305,7 +305,7 @@ Marketch.prototype = {
     artboardData.mask = {};
 
     while(theLayer = loopLayer.nextObject()){
-      var layerSize = theLayer.frameInArtboard().size;
+      var layerSize = theLayer.frame().size;//Sketch 41 Fix: frameInArtboard() = > frame()
       var layerId = util.toJSString(theLayer.objectID());
       //图层父节点id
       var parentGroupId = util.toJSString(theLayer.parentGroup().objectID());
@@ -413,7 +413,7 @@ Marketch.prototype = {
    * 64*64以内，并且不包含文字图层的图层可以按组导出
    */
   groupExportEnable: function(layer){
-    var frame = layer.frameInArtboard().size;
+    var frame = layer.frame().size;//Sketch 41 Fix: frameInArtboard() = > frame()
     var parentLayer = layer.parentGroup();
     //搜索条件
     var predicate = NSPredicate.predicateWithFormat('className == "MSTextLayer"');
