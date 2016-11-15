@@ -81,6 +81,8 @@ Marketch.prototype = {
     var loopVar = null
     var loopObj = null;
 
+    this.expConfig = expConfig;
+
     //初始化临时目录路径
     this.initTmpPath();
     //临时文件跟目录
@@ -510,7 +512,7 @@ Marketch.prototype = {
 
     if(options.name == 'artboard'){
       //画板按2x导出
-      slice.scale = 2;
+      slice.scale = this.expConfig.scale2x ? 2 : 1;
       [doc saveArtboardOrSlice:slice toFile:exportName +'.png'];
     }else{
       // 0.5x
