@@ -431,13 +431,13 @@ var util = {
       /**
        * 修正单行文字图层高度
        * 行高未设置，并且高度与字号相差2px以上时候重新设置高度
-       */
+       *
       if(!/[\r\n]/gi.test(layer.stringValue()) && layerData.style['line-height'] === undefined){
         var fontSize = parseInt(layerData.style['font-size'], 10);
         if(layerData.height - fontSize > 2){
           layerData.height = fontSize + 2;
         }
-      }
+      }*/
 
       if(textAlign){
         layerData.style['text-align'] = textAlign;
@@ -453,7 +453,6 @@ var util = {
           layerData.sharedStyle = util.toJSString(sharedStyle.name());
         }
       }
-
       return layerData;
     }
 
