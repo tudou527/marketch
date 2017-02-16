@@ -44,7 +44,8 @@ ExportAsZip.prototype = {
             layer: expConfig.layer,
             artboard: artboardType,
             saveSource: expConfig.saveSource,
-            scale2x: expConfig.scale2x
+            scale2x: expConfig.scale2x,
+            symbols: expConfig.symbols
           });
 
           zipResult = util.zipFile(marketch.tmpPath.basePath, exportPath);
@@ -69,6 +70,7 @@ ExportAsZip.prototype = {
     var altWin = COSAlertWindow.new();
     var items = [I18N.SELECTEDARTBOARD, I18N.ARTBOARDONPAGE, I18N.ALLARTBOARD];
     var comboBox = NSComboBox.alloc().initWithFrame(NSMakeRect(0,0,200,25));
+    var symbolsBox = NSButton.alloc().initWithFrame(NSMakeRect(0,0,250,14));
     var scaleBox = NSButton.alloc().initWithFrame(NSMakeRect(0,0,250,14));
     var exportBox = NSButton.alloc().initWithFrame(NSMakeRect(0,0,250,14));
     var sourceBox = NSButton.alloc().initWithFrame(NSMakeRect(0,0,250,14));
@@ -80,6 +82,10 @@ ExportAsZip.prototype = {
 
     comboBox.addItemsWithObjectValues(items);
     comboBox.selectItemAtIndex(2);
+
+    symbolsBox.setTitle(I18N.EXPORTSYMBOLS);
+    symbolsBox.setButtonType(NSSwitchButton);
+    symbolsBox.setState(false);
 
     scaleBox.setTitle(I18N.SCALEARTBOARD);
     scaleBox.setButtonType(NSSwitchButton);
@@ -94,6 +100,7 @@ ExportAsZip.prototype = {
     sourceBox.setState(false);
 
     altWin.addAccessoryView(comboBox);
+    altWin.addAccessoryView(symbolsBox);
     altWin.addAccessoryView(scaleBox);
     altWin.addAccessoryView(exportBox);
     altWin.addAccessoryView(sourceBox);
@@ -103,6 +110,8 @@ ExportAsZip.prototype = {
       button: altWin.runModal(),
       //需要导出的画板返回值为索引
       artboard: comboBox.indexOfSelectedItem(),
+      //是否导出所有的 Symbol
+      symbols: symbolsBox.state(),
       //画板导出2x图
       scale2x: scaleBox.state(),
       //是否导出每个图层的图片
