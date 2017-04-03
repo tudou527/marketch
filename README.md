@@ -61,6 +61,8 @@ Notice
 ## Install with Sketch Runner
 With Sketch Runner, just go to the `install` command and search for `marketch`. Runner allows you to manage plugins and do much more to speed up your workflow in Sketch. [Download Runner here](http://www.sketchrunner.com).
 
+![Install with Sketch Runner](marketch-runner.png)
+
 ## Using the Plugin
 * Select pages and artboards in the upper left corner.
 * Select an element to view its location and CSS styles on the right side of the page.
