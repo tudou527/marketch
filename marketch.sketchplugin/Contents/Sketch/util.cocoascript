@@ -303,7 +303,7 @@ var util = {
 
     [zipTask setLaunchPath:@'/usr/bin/ditto'];
     //zip参数
-    [zipTask setArguments:[NSArray arrayWithObjects: @'-c', @'-k', @'-X', @'--rsrc', zipFile, destination, nil]];
+    [zipTask setArguments:[NSArray arrayWithArray:['-c', '-k', '-X', '--rsrc', zipFile, destination]]];
 
     [zipTask launch];
     [zipTask waitUntilExit];
@@ -422,7 +422,7 @@ var util = {
 
       //修正文字图层设置填充后颜色不正确的问题
       if(fontStyle.hasEnabledFill()){
-        var fillColor = layer.style().fill().CSSAttributeString().split(':');
+        var fillColor = layer.style().fills()[0].CSSAttributeString().split(':');
         if(fillColor.length > 1){
           layerData.style.color = util.trim(fillColor[1]);
         }
