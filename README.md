@@ -1,6 +1,6 @@
 # Marketch
 
-Marketch is a Sketch plugin which helps you generate html page from Sketch file, which you can get measures and CSS styles.
+Marketch is a Sketch plugin that helps you generate html page from Sketch file where you can get measures and CSS styles directly.
 
 ![Banner](https://raw.githubusercontent.com/angusjune/marketch/master/logo.png)
 
