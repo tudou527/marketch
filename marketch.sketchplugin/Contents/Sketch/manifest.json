@@ -1,6 +1,6 @@
 {
   "name": "marketch",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "",
   "author": "tudou527",
   "authorEmail": "tudou527@gmail.com",
@@ -27,5 +27,5 @@
     ],
     "title" : "marketch"
   },
-  "identifier": "com.marketch.cosa.98908c77-3d38-48fa-8c7c-1bb465f67eb8",
+  "identifier": "com.marketch.cosa.98908c77-3d38-48fa-8c7c-1bb465f67eb8"
 }
