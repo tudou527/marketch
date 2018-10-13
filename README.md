@@ -19,6 +19,14 @@ Marketch is a Sketch plugin that helps you generate html page from Sketch file w
 
 [http://tudou527.github.io/marketch/](http://tudou527.github.io/marketch/)
 
+## Install
+
+### Manual
+
+1. Download the latest release at: https://github.com/tudou527/marketch/releases
+2. Unzip `marketch.sketchplugin.zip`
+3. Double click `marketch.sketchplugin`
+
 ## Usage
 
 * Select pages and artboards in the upper left corner.
