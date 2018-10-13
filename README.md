@@ -10,10 +10,7 @@ Marketch is a Sketch plugin that helps you generate html page from Sketch file w
 
 ## Preview
 
-![preview](resource/README_1.png)
-![preview](resource/README_2.png)
-![preview](resource/README_3.png)
-![preview](resource/README_4.png)
+![preview](resource/preview.png)
 
 ## Demo
 
