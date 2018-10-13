@@ -1,5 +1,12 @@
 # Change Log 
 
+## v1.0.24 fix
+
+- Workaround Sketch v52 API breaking change by removing sharedObject lookup.
+  - Export function should be recovered.
+  - The text and shape will not appear in the right panel in this version.
+  - Still trying to figure out a long term fix.
+
 ## v1.0.23 fix
 
 * [fix] support sketch 46.2 and macOS 10.13
