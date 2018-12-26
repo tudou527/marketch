@@ -71,6 +71,7 @@ var Marketch = function(){
 
 Marketch.prototype = {
   /**
+   * @param expConfig.symbols {boolean} 是否导出所有的 Symbol
    * @param expConfig.layer {boolean} 是否导出图层为图片
    * @param expConfig.artboard {string} 导出画板选项: selected|page|all
    * @param expConfig.saveSource {boolean} 是否保存sketch源文件
@@ -89,18 +90,6 @@ Marketch.prototype = {
     basePath = this.tmpPath.basePath;
     //预览需要根据是否导出图层为图片选项决定是否显示导出按钮
     this.sketchData.exportEveryLayer = expConfig.layer;
-
-    //从所有画板中过滤出symbol
-    loopObj = doc.pages().objectEnumerator();
-    while(loopVar = loopObj.nextObject()){
-      var artloops = loopVar.artboards().objectEnumerator();
-      while(artboard = artloops.nextObject()){
-        // 不导出前缀为 - 且不为 symbol 的图层
-        if(artboard.className() == 'MSSymbolMaster'){
-          this.allArtboards.addObject(artboard);
-        }
-      }
-    }
 
     //导出选中画板
     if(expConfig.artboard == 'selected'){
@@ -134,6 +123,20 @@ Marketch.prototype = {
             if(artboard.className() == 'MSArtboardGroup' && !/^-{1}[^-]*?.*$/.test(artboard.name())){
               this.allArtboards.addObject(artboard);
             }
+          }
+        }
+      }
+    }
+
+    // 导出所有的 Symbol
+    if (expConfig.symbols) {
+      loopObj = doc.pages().objectEnumerator();
+      while (loopVar = loopObj.nextObject()) {
+        var artloops = loopVar.artboards().objectEnumerator();
+        while (artboard = artloops.nextObject()) {
+          // 不导出前缀为 '-' 且不为 Symbol 的图层
+          if (artboard.className() == 'MSSymbolMaster') {
+            this.allArtboards.addObject(artboard);
           }
         }
       }
